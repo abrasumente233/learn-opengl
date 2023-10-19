@@ -1,51 +1,68 @@
-/* Ask for an OpenGL Core Context */
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+#include <stdio.h>
 
-int main(int argc, char** argv)
-{
-  GLFWwindow* window;
+void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void process_input(GLFWwindow *window);
 
-  /* Initialize the library */
-  if ( !glfwInit() )
-  {
-     return -1;
-  }
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+int main() {
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
-  /* We need to explicitly ask for a 3.2 context on OS X */
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
-  glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-  /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow( 1280, 720, "Hello World", NULL, NULL );
-  if (!window)
-  {
-     glfwTerminate();
-     return -1;
+  GLFWwindow *window =
+    glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+  if (window == NULL) {
+    printf("Failed to create GLFW window\n");
+    glfwTerminate();
+    return -1;
+  }
+  glfwMakeContextCurrent(window);
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    printf("Failed to initialize GLAD\n");
+    return -1;
   }
 
-  /* Make the window's context current */
-  glfwMakeContextCurrent(window);
+  while (!glfwWindowShouldClose(window)) {
+    process_input(window);
 
-  /* Loop until the user closes the window */
-  while (!glfwWindowShouldClose(window))
-  {
-    /* Render here */
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the buffers
+    // render
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    /* Swap front and back buffers */
+    // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
+    // etc.)
     glfwSwapBuffers(window);
-
-    /* Poll for and process events */
     glfwPollEvents();
   }
 
+  // glfw: terminate, clearing all previously allocated GLFW resources.
   glfwTerminate();
   return 0;
+}
+
+// process all input: query GLFW whether relevant keys are pressed/released this
+// frame and react accordingly
+void process_input(GLFWwindow *window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, true);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback
+// function executes
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+  // make sure the viewport matches the new window dimensions; note that width
+  // and height will be significantly larger than specified on retina displays.
+  glViewport(0, 0, width, height);
 }
