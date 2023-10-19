@@ -12,6 +12,7 @@ commonflags = $
   -Wconversion $
   -Wsign-conversion $
   -Wno-unused-parameter $
+  -fdiagnostics-color=always $
   -Wno-error=deprecated-declarations $
   -I./deps/glad/include
 
