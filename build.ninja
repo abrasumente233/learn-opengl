@@ -1,0 +1,38 @@
+builddir = build
+cxx = clang++
+
+cflags = $
+  -g $
+  -std=c++17 $
+  -Wall $
+  -Wextra $
+  -Werror $
+  -Wshadow $
+  -Wconversion $
+  -Wsign-conversion $
+  -Wno-unused-parameter $
+  -Wno-error=deprecated-declarations $
+  -stdlib=libc++ $
+  -lglfw $
+  -framework CoreVideo $
+  -framework OpenGL $
+  -framework IOKit $
+  -framework Cocoa $
+  -framework Carbon
+
+rule cxx
+  command = $cxx -MMD -MF $out.d $cflags $in -o $out
+  depfile = $out.d
+  description = compile $in
+
+rule cc_database
+  command = ninja -t compdb > $out
+  description = generating compile database
+
+build build/main: cxx main.cpp
+
+build build/compile_commands.json: cc_database | build.ninja
+
+build main: phony build/main
+
+default main build/compile_commands.json
