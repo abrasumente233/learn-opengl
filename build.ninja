@@ -1,9 +1,10 @@
 builddir = build
+cc = clang
 cxx = clang++
+ld = clang
 
-cflags = $
+commonflags = $
   -g $
-  -std=c++17 $
   -Wall $
   -Wextra $
   -Werror $
@@ -12,27 +13,42 @@ cflags = $
   -Wsign-conversion $
   -Wno-unused-parameter $
   -Wno-error=deprecated-declarations $
+  -I./deps/glad/include
+
+cxxflags = $
+  -std=c++17 $
   -stdlib=libc++ $
+  
+ldflags = $
   -lglfw $
   -framework CoreVideo $
   -framework OpenGL $
   -framework IOKit $
   -framework Cocoa $
-  -framework Carbon
+  -framework Carbon $
 
-rule cxx
-  command = $cxx -MMD -MF $out.d $cflags $in -o $out
+
+rule cc
+  command = $cc -MMD -MF $out.d -c $commonflags $in -o $out
   depfile = $out.d
   description = compile $in
+
+rule cxx
+  command = $cxx -MMD -MF $out.d -c $commonflags $cxxflags $in -o $out
+  depfile = $out.d
+  description = compile $in
+
+rule link
+  command = $ld $ldflags $in -o $out
 
 rule cc_database
   command = ninja -t compdb > $out
   description = generating compile database
 
-build build/main: cxx main.cpp
-
 build build/compile_commands.json: cc_database | build.ninja
 
-build main: phony build/main
+build build/main.o: cxx main.cpp
+build build/glad.o: cc deps/glad/glad.c
+build build/main: link build/main.o build/glad.o
 
-default main build/compile_commands.json
+default build/main build/compile_commands.json
