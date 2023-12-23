@@ -1,4 +1,5 @@
 #include <glad/glad.h>
+
 #include <GLFW/glfw3.h>
 
 #include <stdio.h>
@@ -20,26 +21,28 @@ enum class ShaderType {
 // now it seems incorrect. i think the shader compiler here actually translates
 // the shader source into a format that... i don't know, into what? into some
 // intermediate representation that are unified across OpenGL implementations,
-// a.k.a vendor-independent or specified by OpenGL standard, or each vendor has to compile
-// GLSL source by themselves into a format that's only recognizable by their own
-// device driver?
+// a.k.a vendor-independent or specified by OpenGL standard, or each vendor has
+// to compile GLSL source by themselves into a format that's only recognizable
+// by their own device driver?
 //
 // Oh, I see, it can't be vendor-independent. Otherwise game developers would
 // only need to ship the unified intermediate representation, and the "compiling
 // shaders" on the loading screen wouldn't take 20 minutes, because shaders are
 // already shipped in an optimized format.
 //
-// So unfortunately, not only every device driver need to roll their own GLSL compiler,
-// (if they don't use Mesa or some other solutions), they also pay the price of stupidly
-// long shader compile time.
+// So unfortunately, not only every device driver need to roll their own GLSL
+// compiler, (if they don't use Mesa or some other solutions), they also pay the
+// price of stupidly long shader compile time.
 //
-// Also having to roll a compiler by themselves means there are good and bad compilers.
+// Also having to roll a compiler by themselves means there are good and bad
+// compilers.
 //
-// NIR basically solves the "unified intermediate representation" problem, but you still
-// have the long compile time problem.
+// NIR basically solves the "unified intermediate representation" problem, but
+// you still have the long compile time problem.
 //
 unsigned int compile_shader(const char *source, ShaderType shader_type) {
-  unsigned int shader = glCreateShader(shader_type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+  unsigned int shader = glCreateShader(
+    shader_type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
 
   glShaderSource(shader, 1, &source, NULL);
   glCompileShader(shader);
@@ -52,7 +55,8 @@ unsigned int compile_shader(const char *source, ShaderType shader_type) {
 #ifdef LEARNGL_DEBUG
     char info_log[512];
     glGetShaderInfoLog(shader, 512, NULL, info_log);
-    fprintf(stderr, "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", info_log);
+    fprintf(stderr, "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n",
+            info_log);
 #endif
     return 0;
   }
@@ -62,8 +66,7 @@ unsigned int compile_shader(const char *source, ShaderType shader_type) {
 
 // link vertex and fragment shader into a shader program.
 // returns the program id
-unsigned int link_shaders(unsigned int vshader, unsigned fshader)
-{
+unsigned int link_shaders(unsigned int vshader, unsigned fshader) {
   unsigned int shader_program;
   shader_program = glCreateProgram();
   glAttachShader(shader_program, vshader);
@@ -85,7 +88,6 @@ unsigned int link_shaders(unsigned int vshader, unsigned fshader)
   }
 
   return shader_program;
-
 }
 
 int main() {
@@ -113,23 +115,27 @@ int main() {
     return -1;
   }
 
-  const char *vertex_shader_source = "#version 330 core\n"
+  const char *vertex_shader_source =
+    "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
-  unsigned int vertex_shader = compile_shader(vertex_shader_source, ShaderType::Vertex);
+  unsigned int vertex_shader =
+    compile_shader(vertex_shader_source, ShaderType::Vertex);
 
-  const char *fragment_shader_source = "#version 330 core\n"
+  const char *fragment_shader_source =
+    "#version 330 core\n"
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
     "}\0";
 
-  unsigned int fragment_shader = compile_shader(fragment_shader_source, ShaderType::Fragment);
+  unsigned int fragment_shader =
+    compile_shader(fragment_shader_source, ShaderType::Fragment);
 
   unsigned int shader_program = link_shaders(vertex_shader, fragment_shader);
 
@@ -139,10 +145,10 @@ int main() {
 
   // prepare vertex data
   float vertices[] = {
-    0.5f,  0.5f, 0.0f, // top right
-    0.5f, -0.5f, 0.0f, // bottom right
+    0.5f,  0.5f,  0.0f, // top right
+    0.5f,  -0.5f, 0.0f, // bottom right
     -0.5f, -0.5f, 0.0f, // bottom left
-    -0.5f,  0.5f, 0.0f  // top left
+    -0.5f, 0.5f,  0.0f  // top left
   };
 
   unsigned int indices[] = {
@@ -173,9 +179,10 @@ int main() {
 
   // copies vertex data into buffer's memory.
   //
-  //   GL_STATIC_DRAW:  the data will most likely not change at all or very rarely.
-  //   GL_DYNAMIC_DRAW: the data is likely to change a lot.
-  //   GL_STREAM_DRAW:  the data will change every time it is drawn.
+  //   1) GL_STATIC_DRAW:  the data will most likely not change at all
+  //                       or very rarely.
+  //   2) GL_DYNAMIC_DRAW: the data is likely to change a lot.
+  //   3) GL_STREAM_DRAW:  the data will change every time it is drawn.
   //
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -183,7 +190,8 @@ int main() {
   unsigned int EBO;
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
 
   // link vertex attributes
   // 0 is the location of the vertex attribute in the vertex shader.
@@ -214,7 +222,7 @@ int main() {
     // activate the shader program before rendering.
     glUseProgram(shader_program);
     glBindVertexArray(VAO);
-    //glDrawArrays(GL_TRIANGLES, 0, 3);
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
