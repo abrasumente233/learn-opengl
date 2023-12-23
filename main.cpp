@@ -175,6 +175,9 @@ int main() {
 
   // I've never seen API this ugly before.
 
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   // ====== <VAO setup /> ======
 
   while (!glfwWindowShouldClose(window)) {
@@ -189,6 +192,7 @@ int main() {
     glBindVertexArray(VAO);
     //glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
     // etc.)
