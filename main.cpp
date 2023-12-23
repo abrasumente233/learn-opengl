@@ -118,9 +118,15 @@ int main() {
 
   // prepare vertex data
   float vertices[] = {
-    -0.5f, -0.5f, 0.0f, // left
-    0.5f, -0.5f, 0.0f,  // right
-    0.0f, 0.5f, 0.0f    // top
+    0.5f,  0.5f, 0.0f, // top right
+    0.5f, -0.5f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, // bottom left
+    -0.5f,  0.5f, 0.0f  // top left
+  };
+
+  unsigned int indices[] = {
+    0, 1, 3, // first triangle
+    1, 2, 3, // second triangle
   };
 
   // ====== <VAO setup> ======
@@ -152,6 +158,12 @@ int main() {
   //
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+  // set up element buffer object.
+  unsigned int EBO;
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
   // link vertex attributes
   // 0 is the location of the vertex attribute in the vertex shader.
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
@@ -175,7 +187,8 @@ int main() {
     // activate the shader program before rendering.
     glUseProgram(shader_program);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
     // etc.)
