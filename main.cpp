@@ -9,6 +9,85 @@ void process_input(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+enum class ShaderType {
+  Vertex,
+  Fragment,
+};
+
+// NOTE! SHADER COMPILER.
+//
+// previously i claimed that compiler lives in the device driver layer, but
+// now it seems incorrect. i think the shader compiler here actually translates
+// the shader source into a format that... i don't know, into what? into some
+// intermediate representation that are unified across OpenGL implementations,
+// a.k.a vendor-independent or specified by OpenGL standard, or each vendor has to compile
+// GLSL source by themselves into a format that's only recognizable by their own
+// device driver?
+//
+// Oh, I see, it can't be vendor-independent. Otherwise game developers would
+// only need to ship the unified intermediate representation, and the "compiling
+// shaders" on the loading screen wouldn't take 20 minutes, because shaders are
+// already shipped in an optimized format.
+//
+// So unfortunately, not only every device driver need to roll their own GLSL compiler,
+// (if they don't use Mesa or some other solutions), they also pay the price of stupidly
+// long shader compile time.
+//
+// Also having to roll a compiler by themselves means there are good and bad compilers.
+//
+// NIR basically solves the "unified intermediate representation" problem, but you still
+// have the long compile time problem.
+//
+unsigned int compile_shader(const char *source, ShaderType shader_type) {
+  unsigned int shader = glCreateShader(shader_type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
+
+  glShaderSource(shader, 1, &source, NULL);
+  glCompileShader(shader);
+
+  // check if compile is successful
+  int success;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+
+#ifdef LEARNGL_DEBUG
+    char info_log[512];
+    glGetShaderInfoLog(shader, 512, NULL, info_log);
+    fprintf(stderr, "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", info_log);
+#endif
+    return 0;
+  }
+
+  return shader;
+}
+
+// link vertex and fragment shader into a shader program.
+// returns the program id
+unsigned int link_shaders(unsigned int vshader, unsigned fshader)
+{
+  unsigned int shader_program;
+  shader_program = glCreateProgram();
+  glAttachShader(shader_program, vshader);
+  glAttachShader(shader_program, fshader);
+  glLinkProgram(shader_program);
+
+  // check if link is successful
+  int success;
+  glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+  if (!success) {
+
+#ifdef LEARNGL_DEBUG
+    char info_log[512];
+    glGetProgramInfoLog(shader_program, 512, NULL, info_log);
+    fprintf(stderr, "ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n", info_log);
+#endif
+
+    return 0;
+  }
+
+  return shader_program;
+
+}
+
 int main() {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -41,43 +120,7 @@ int main() {
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
-  // NOTE! SHADER COMPILER.
-  //
-  // previously i claimed that compiler lives in the device driver layer, but
-  // now it seems incorrect. i think the shader compiler here actually translates
-  // the shader source into a format that... i don't know, into what? into some
-  // intermediate representation that are unified across OpenGL implementations,
-  // a.k.a vendor-independent or specified by OpenGL standard, or each vendor has to compile
-  // GLSL source by themselves into a format that's only recognizable by their own
-  // device driver?
-  //
-  // Oh, I see, it can't be vendor-independent. Otherwise game developers would
-  // only need to ship the unified intermediate representation, and the "compiling
-  // shaders" on the loading screen wouldn't take 20 minutes, because shaders are
-  // already shipped in an optimized format.
-  //
-  // So unfortunately, not only every device driver need to roll their own GLSL compiler,
-  // (if they don't use Mesa or some other solutions), they also pay the price of stupidly
-  // long shader compile time.
-  //
-  // Also having to roll a compiler by themselves means there are good and bad compilers.
-  //
-  // NIR basically solves the "unified intermediate representation" problem, but you still
-  // have the long compile time problem.
-  //
-  unsigned int vertex_shader;
-  vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
-  glCompileShader(vertex_shader);
-
-  // check if compile is successful
-  int success;
-  char info_log[512];
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
-    printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", info_log);
-  }
+  unsigned int vertex_shader = compile_shader(vertex_shader_source, ShaderType::Vertex);
 
   const char *fragment_shader_source = "#version 330 core\n"
     "out vec4 FragColor;\n"
@@ -86,31 +129,9 @@ int main() {
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
     "}\0";
 
-  unsigned int fragment_shader;
-  fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
-  glCompileShader(fragment_shader);
+  unsigned int fragment_shader = compile_shader(fragment_shader_source, ShaderType::Fragment);
 
-  // check if compile is successful
-  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-    glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-    printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", info_log);
-  }
-
-  // link vertex and fragment shader into a shader program.
-  unsigned int shader_program;
-  shader_program = glCreateProgram();
-  glAttachShader(shader_program, vertex_shader);
-  glAttachShader(shader_program, fragment_shader);
-  glLinkProgram(shader_program);
-
-  // check if link is successful
-  glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-  if (!success) {
-    glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-    printf("ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n", info_log);
-  }
+  unsigned int shader_program = link_shaders(vertex_shader, fragment_shader);
 
   // delete shader objects after linking.
   glDeleteShader(vertex_shader);
