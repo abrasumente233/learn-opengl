@@ -180,6 +180,9 @@ int main() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   // ====== <VAO setup /> ======
 
+  // draw in wireframe polygons.
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
 
