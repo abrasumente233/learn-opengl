@@ -123,7 +123,7 @@ int main() {
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
-  unsigned int vertex_shader =
+  unsigned int vshader =
     compile_shader(vertex_shader_source, ShaderType::Vertex);
 
   const char *fragment_shader_source =
@@ -134,14 +134,14 @@ int main() {
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
     "}\0";
 
-  unsigned int fragment_shader =
+  unsigned int fshader =
     compile_shader(fragment_shader_source, ShaderType::Fragment);
 
-  unsigned int shader_program = link_shaders(vertex_shader, fragment_shader);
+  unsigned int shader_program = link_shaders(vshader, fshader);
 
   // delete shader objects after linking.
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
+  glDeleteShader(vshader);
+  glDeleteShader(fshader);
 
   // prepare vertex data
   float vertices[] = {
