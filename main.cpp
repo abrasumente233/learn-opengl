@@ -50,7 +50,9 @@ enum class ShaderType {
 // all over again: you still have to support the apps that ship OpenGL & GLSL shaders,
 // so of course you will still want that dragon to be here. And now that you have
 // dragon at home, SPIR-V codegen is going to use The Dragon as well. Surely you
-// don't want two separate codegen infrastructure.
+// don't want two separate codegen infrastructure. Of course Mesa now has a competing
+// compiler infrastructure around NIR and you can use that. Also Mesa provides reusable
+// bits for writing drivers, I wonder how LLVM people writes their drivers?
 //
 // It's funny to see myself talked about MLIR and now SPIR-V in an unconscious way.
 // If only I was born eailier? LOL.
