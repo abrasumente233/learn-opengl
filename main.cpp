@@ -40,6 +40,21 @@ enum class ShaderType {
 // NIR basically solves the "unified intermediate representation" problem, but
 // you still have the long compile time problem.
 //
+// UPDATE in 2024/05/19: oh, I was talking about SPIR-V.
+// Reference: https://en.wikipedia.org/wiki/Vulkan#Pre-compiled_shaders
+// So according to wikipedia, "A vulkan driver are supposed to ingest shaders
+// already in SPIR-V format". So I guess all that is left is GPU-specific
+// optimizations and code generation, which is a lot easier and deinfitely
+// faster than compiling GLSL source. I wouldn't say it's instant, if you are
+// still using LLVM for absolutely no reason? Oh it's the the fucking Liebig's Law
+// all over again: you still have to support the apps that ship OpenGL & GLSL shaders,
+// so of course you will still want that dragon to be here. And now that you have
+// dragon at home, SPIR-V codegen is going to use The Dragon as well. Surely you
+// don't want two separate codegen infrastructure.
+//
+// It's funny to see myself talked about MLIR and now SPIR-V in an unconscious way.
+// If only I was born eailier? LOL.
+//
 unsigned int compile_shader(const char *source, ShaderType shader_type) {
   unsigned int shader = glCreateShader(
     shader_type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
