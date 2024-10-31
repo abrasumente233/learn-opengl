@@ -53,10 +53,6 @@ enum class ShaderType {
 // don't want two separate codegen infrastructure. Of course Mesa now has a competing
 // compiler infrastructure around NIR and you can use that. Also Mesa provides reusable
 // bits for writing drivers, I wonder how LLVM people writes their drivers?
-//
-// It's funny to see myself talked about MLIR and now SPIR-V in an unconscious way.
-// If only I was born eailier? LOL.
-//
 unsigned int compile_shader(const char *source, ShaderType shader_type) {
   unsigned int shader = glCreateShader(
     shader_type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
