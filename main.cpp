@@ -143,6 +143,10 @@ int main() {
     return -1;
   }
 
+  int nr_attributes;
+  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nr_attributes);
+  printf("Maximum nr of vertex attributes supported: %d\n", nr_attributes);
+
   auto vs_src = read_file_to_string("basic.vert");
   auto fs_src = read_file_to_string("basic.frag");
 
