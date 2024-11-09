@@ -61,13 +61,14 @@ enum class ShaderType {
 // already in SPIR-V format". So I guess all that is left is GPU-specific
 // optimizations and code generation, which is a lot easier and deinfitely
 // faster than compiling GLSL source. I wouldn't say it's instant, if you are
-// still using LLVM for absolutely no reason? Oh it's the the fucking Liebig's Law
-// all over again: you still have to support the apps that ship OpenGL & GLSL shaders,
-// so of course you will still want that dragon to be here. And now that you have
-// dragon at home, SPIR-V codegen is going to use The Dragon as well. Surely you
-// don't want two separate codegen infrastructure. Of course Mesa now has a competing
-// compiler infrastructure around NIR and you can use that. Also Mesa provides reusable
-// bits for writing drivers, I wonder how LLVM people writes their drivers?
+// still using LLVM for absolutely no reason? Oh it's the the fucking Liebig's
+// Law all over again: you still have to support the apps that ship OpenGL &
+// GLSL shaders, so of course you will still want that dragon to be here. And
+// now that you have dragon at home, SPIR-V codegen is going to use The Dragon
+// as well. Surely you don't want two separate codegen infrastructure. Of course
+// Mesa now has a competing compiler infrastructure around NIR and you can use
+// that. Also Mesa provides reusable bits for writing drivers, I wonder how LLVM
+// people writes their drivers?
 unsigned int compile_shader(const char *source, ShaderType shader_type) {
   unsigned int shader = glCreateShader(
     shader_type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
@@ -170,7 +171,7 @@ int main() {
 
   unsigned int indices[] = {
     0, 1, 3, // first triangle
-    1, 2, 3, // second triangle
+    // 1, 2, 3, // second triangle
   };
 
   // ====== <VAO setup> ======
@@ -227,7 +228,8 @@ int main() {
   // ====== <VAO setup /> ======
 
   // draw in wireframe polygons.
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
@@ -235,6 +237,12 @@ int main() {
     // render
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    float time = (float)glfwGetTime();
+    float green_value = (sin(time) / 2.0f) + 0.5f;
+    int vertex_color_location =
+      glGetUniformLocation(shader_program, "ourColor");
+    glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
 
     // activate the shader program before rendering.
     glUseProgram(shader_program);
