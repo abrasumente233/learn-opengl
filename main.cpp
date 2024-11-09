@@ -164,16 +164,29 @@ int main() {
   glDeleteShader(fs);
 
   // prepare vertex data
+  // float vertices[] = {
+  //   // positions        // colors
+  //   0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, // top right
+  //   0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
+  //   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
+  //   -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f  // top left
+  // };
+
+  // a proper triangle
   float vertices[] = {
     // positions        // colors
-    0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, // top right
-    0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
-    -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f  // top left
+     0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
+    0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,   // top
   };
 
+
+  // unsigned int indices[] = {
+  //   0, 1, 3, // first triangle
+  //   // 1, 2, 3, // second triangle
+  // };
   unsigned int indices[] = {
-    0, 1, 3, // first triangle
+    0, 1, 2, // first triangle
     // 1, 2, 3, // second triangle
   };
 
@@ -250,8 +263,7 @@ int main() {
     //   glGetUniformLocation(shader_program, "ourColor");
     // glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
     glGetUniformLocation(shader_program, "offsetX");
-    glUniform1f(0, 0.5f);
-
+    glUniform1f(0, 0.0f);
 
     // activate the shader program before rendering.
     glUseProgram(shader_program);
