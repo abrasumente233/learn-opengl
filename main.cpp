@@ -8,6 +8,8 @@
 // This line is necessary. glad must be included before glfw.
 #include <GLFW/glfw3.h>
 
+#define LEARNGL_DEBUG
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void process_input(GLFWwindow *window);
 
@@ -163,10 +165,11 @@ int main() {
 
   // prepare vertex data
   float vertices[] = {
-    0.5f,  0.5f,  0.0f, // top right
-    0.5f,  -0.5f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f, // bottom left
-    -0.5f, 0.5f,  0.0f  // top left
+    // positions        // colors
+    0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, // top right
+    0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
+    -0.5f, 0.5f,  0.0f, 0.0f, 0.0f, 1.0f  // top left
   };
 
   unsigned int indices[] = {
@@ -213,12 +216,15 @@ int main() {
 
   // link vertex attributes
   // 0 is the location of the vertex attribute in the vertex shader.
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
   // point the currently bound GL_ARRAY_BUFFER to location 0;
   glEnableVertexAttribArray(0);
   // in summary, `glVertexAttribPointer` declares the type
   // and `glEnableVertexAttribArray` tells the VBO the pointer.
   // i guess.
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 
   // I've never seen API this ugly before.
 
@@ -238,17 +244,18 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    float time = (float)glfwGetTime();
-    float green_value = (sin(time) / 2.0f) + 0.5f;
-    int vertex_color_location =
-      glGetUniformLocation(shader_program, "ourColor");
-    glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
+    // float time = (float)glfwGetTime();
+    // float green_value = (sin(time) / 2.0f) + 0.5f;
+    // int vertex_color_location =
+    //   glGetUniformLocation(shader_program, "ourColor");
+    // glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
 
     // activate the shader program before rendering.
     glUseProgram(shader_program);
     glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned int),
+                   GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
