@@ -249,6 +249,9 @@ int main() {
     // int vertex_color_location =
     //   glGetUniformLocation(shader_program, "ourColor");
     // glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
+    glGetUniformLocation(shader_program, "offsetX");
+    glUniform1f(0, 0.5f);
+
 
     // activate the shader program before rendering.
     glUseProgram(shader_program);
