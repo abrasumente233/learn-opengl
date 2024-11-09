@@ -1,14 +1,29 @@
+#include <fstream>
+#include <iostream>
+#include <optional>
+#include <sstream>
+#include <string>
+
 #include <glad/glad.h>
-
+// This line is necessary. glad must be included before glfw.
 #include <GLFW/glfw3.h>
-
-#include <stdio.h>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void process_input(GLFWwindow *window);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+std::optional<std::string> read_file_to_string(const std::string &filename) {
+  std::ifstream file(filename);
+  if (!file.is_open()) {
+    return std::nullopt;
+  }
+
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  return buffer.str();
+}
 
 enum class ShaderType {
   Vertex,
@@ -128,33 +143,18 @@ int main() {
     return -1;
   }
 
-  const char *vertex_shader_source =
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
+  auto vs_src = read_file_to_string("basic.vert");
+  auto fs_src = read_file_to_string("basic.frag");
 
-  unsigned int vshader =
-    compile_shader(vertex_shader_source, ShaderType::Vertex);
+  unsigned int vs = compile_shader(vs_src.value().c_str(), ShaderType::Vertex);
+  unsigned int fs =
+    compile_shader(fs_src.value().c_str(), ShaderType::Fragment);
 
-  const char *fragment_shader_source =
-    "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\0";
-
-  unsigned int fshader =
-    compile_shader(fragment_shader_source, ShaderType::Fragment);
-
-  unsigned int shader_program = link_shaders(vshader, fshader);
+  unsigned int shader_program = link_shaders(vs, fs);
 
   // delete shader objects after linking.
-  glDeleteShader(vshader);
-  glDeleteShader(fshader);
+  glDeleteShader(vs);
+  glDeleteShader(fs);
 
   // prepare vertex data
   float vertices[] = {

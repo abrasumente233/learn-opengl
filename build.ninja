@@ -1,7 +1,7 @@
 builddir = build
 cc = clang
 cxx = clang++
-ld = clang
+ld = clang++
 
 commonflags = $
   -g $
