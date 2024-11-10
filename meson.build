@@ -20,7 +20,7 @@ glad = library(
 
 executable(
   'main',
-  'main.cpp',
+  'src/main.cpp',
   include_directories: gladinc,
   link_with: glad,
   dependencies: [glfw],

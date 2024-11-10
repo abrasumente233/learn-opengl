@@ -150,8 +150,8 @@ int main() {
   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nr_attributes);
   printf("Maximum nr of vertex attributes supported: %d\n", nr_attributes);
 
-  auto vs_src = read_file_to_string("basic.vert");
-  auto fs_src = read_file_to_string("basic.frag");
+  auto vs_src = read_file_to_string("src/basic.vert");
+  auto fs_src = read_file_to_string("src/basic.frag");
 
   unsigned int vs = compile_shader(vs_src.value().c_str(), ShaderType::Vertex);
   unsigned int fs =
