@@ -173,13 +173,14 @@ int main() {
   // };
 
   // a proper triangle
+  size_t num_vertices = 3;
   float vertices[] = {
     // positions        // colors
-     0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
+    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
     -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-    0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,   // top
+    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, // top
   };
-
+  int va_stride = sizeof(vertices) / num_vertices;
 
   // unsigned int indices[] = {
   //   0, 1, 3, // first triangle
@@ -229,13 +230,13 @@ int main() {
 
   // link vertex attributes
   // 0 is the location of the vertex attribute in the vertex shader.
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, va_stride, (void *)0);
   // point the currently bound GL_ARRAY_BUFFER to location 0;
   glEnableVertexAttribArray(0);
   // in summary, `glVertexAttribPointer` declares the type
   // and `glEnableVertexAttribArray` tells the VBO the pointer.
   // i guess.
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, va_stride,
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
@@ -262,8 +263,8 @@ int main() {
     // int vertex_color_location =
     //   glGetUniformLocation(shader_program, "ourColor");
     // glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
-    glGetUniformLocation(shader_program, "offsetX");
-    glUniform1f(0, 0.0f);
+    // glGetUniformLocation(shader_program, "offsetX");
+    // glUniform1f(0, 0.0f);
 
     // activate the shader program before rendering.
     glUseProgram(shader_program);
