@@ -175,10 +175,10 @@ int main() {
   // a proper triangle
   size_t num_vertices = 3;
   float vertices[] = {
-    // positions        // colors
-    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, // top
+    // positions        // start color    // end color
+    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
+    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f  // top
   };
   int va_stride = sizeof(vertices) / num_vertices;
 
@@ -239,6 +239,9 @@ int main() {
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, va_stride,
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, va_stride,
+                        (void *)(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
 
   // I've never seen API this ugly before.
 
@@ -258,13 +261,10 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // float time = (float)glfwGetTime();
-    // float green_value = (sin(time) / 2.0f) + 0.5f;
-    // int vertex_color_location =
-    //   glGetUniformLocation(shader_program, "ourColor");
-    // glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
-    // glGetUniformLocation(shader_program, "offsetX");
-    // glUniform1f(0, 0.0f);
+    float time = (float)glfwGetTime();
+    float t = (sin(4.0f*time) / 2.0f) + 0.5f;
+    int t_location = glGetUniformLocation(shader_program, "t");
+    glUniform1f(t_location, t);
 
     // activate the shader program before rendering.
     glUseProgram(shader_program);
