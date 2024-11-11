@@ -176,25 +176,26 @@ int main() {
   // };
 
   // a proper triangle
-  size_t num_vertices = 3;
+  size_t num_vertices = 4;
   // clang-format off
   float vertices[] = {
     // positions        // start color    // end color      // texture coords
-    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+     0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
     -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f  // top
+    -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // top left
+     0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f  // top right
   };
   // clang-format on
   int va_stride = sizeof(vertices) / num_vertices;
 
+  unsigned int indices[] = {
+    0, 1, 3, // first triangle
+    1, 2, 3, // second triangle
+  };
   // unsigned int indices[] = {
-  //   0, 1, 3, // first triangle
+  //   0, 1, 2, // first triangle
   //   // 1, 2, 3, // second triangle
   // };
-  unsigned int indices[] = {
-    0, 1, 2, // first triangle
-    // 1, 2, 3, // second triangle
-  };
 
   // ====== <VAO setup> ======
 
@@ -265,7 +266,7 @@ int main() {
     int width, height, n_channels;
     unsigned char *texdata =
       stbi_load("./assets/container.jpg", &width, &height, &n_channels, 0);
-      // stbi_load("./assets/awesomeface.png", &width, &height, &n_channels, 0);
+    // stbi_load("./assets/awesomeface.png", &width, &height, &n_channels, 0);
     if (!texdata) {
       fprintf(stderr, "Failed to load texture\n");
       return -1;
