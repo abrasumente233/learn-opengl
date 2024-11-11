@@ -272,7 +272,6 @@ int main() {
     }
 
     glGenTextures(1, &texture0);
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture0);
 
     auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
@@ -293,7 +292,6 @@ int main() {
     // assert(n_channels == 4 && "awesomeface.png must have 4 channels");
 
     glGenTextures(1, &texture1);
-    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture1);
 
     auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
@@ -315,6 +313,10 @@ int main() {
   // for the same reason above, we can set the texture unit once here.
   glUniform1i(glGetUniformLocation(shader_program, "texture0"), 0);
   glUniform1i(glGetUniformLocation(shader_program, "texture1"), 1);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture0);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, texture1);
 
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
@@ -327,11 +329,6 @@ int main() {
     float t = (sin(4.0f * time) / 2.0f) + 0.5f;
     int t_location = glGetUniformLocation(shader_program, "t");
     glUniform1f(t_location, t);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture0);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
 
     glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
