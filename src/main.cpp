@@ -8,6 +8,9 @@
 // This line is necessary. glad must be included before glfw.
 #include <GLFW/glfw3.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #define LEARNGL_DEBUG
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -174,12 +177,14 @@ int main() {
 
   // a proper triangle
   size_t num_vertices = 3;
+  // clang-format off
   float vertices[] = {
-    // positions        // start color    // end color
-    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
-    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f  // top
+    // positions        // start color    // end color      // texture coords
+    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.5f, 1.0f  // top
   };
+  // clang-format on
   int va_stride = sizeof(vertices) / num_vertices;
 
   // unsigned int indices[] = {
@@ -242,6 +247,9 @@ int main() {
   glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, va_stride,
                         (void *)(6 * sizeof(float)));
   glEnableVertexAttribArray(2);
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, va_stride,
+                        (void *)(9 * sizeof(float)));
+  glEnableVertexAttribArray(3);
 
   // I've never seen API this ugly before.
 
@@ -250,9 +258,63 @@ int main() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   // ====== <VAO setup /> ======
 
+  // ====== <Texture> ======
+  stbi_set_flip_vertically_on_load(true);
+  unsigned int texture0, texture1;
+  {
+    int width, height, n_channels;
+    unsigned char *texdata =
+      stbi_load("./assets/container.jpg", &width, &height, &n_channels, 0);
+      // stbi_load("./assets/awesomeface.png", &width, &height, &n_channels, 0);
+    if (!texdata) {
+      fprintf(stderr, "Failed to load texture\n");
+      return -1;
+    }
+
+    glGenTextures(1, &texture0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture0);
+
+    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
+    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
+                 GL_UNSIGNED_BYTE, texdata);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(texdata);
+  }
+
+  {
+    int width, height, n_channels;
+    unsigned char *texdata =
+      stbi_load("./assets/awesomeface.png", &width, &height, &n_channels, 0);
+    if (!texdata) {
+      fprintf(stderr, "Failed to load texture\n");
+      return -1;
+    }
+    // assert(n_channels == 4 && "awesomeface.png must have 4 channels");
+
+    glGenTextures(1, &texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
+    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
+                 GL_UNSIGNED_BYTE, texdata);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(texdata);
+  }
+
+  // ====== <Texture /> ======
+
   // draw in wireframe polygons.
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+  // since we only have one shader we can activate the shader once here.
+  glUseProgram(shader_program);
+
+  // for the same reason above, we can set the texture unit once here.
+  glUniform1i(glGetUniformLocation(shader_program, "texture0"), 0);
+  glUniform1i(glGetUniformLocation(shader_program, "texture1"), 1);
 
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
@@ -262,12 +324,15 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     float time = (float)glfwGetTime();
-    float t = (sin(4.0f*time) / 2.0f) + 0.5f;
+    float t = (sin(4.0f * time) / 2.0f) + 0.5f;
     int t_location = glGetUniformLocation(shader_program, "t");
     glUniform1f(t_location, t);
 
-    // activate the shader program before rendering.
-    glUseProgram(shader_program);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
     glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned int),
