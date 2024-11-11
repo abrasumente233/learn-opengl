@@ -177,13 +177,17 @@ int main() {
 
   // a proper triangle
   size_t num_vertices = 4;
+  const float cx = 0.3f, cy = 0.5f;
+  const float d = 0.037f;
+  const float xl = cx - d, xr = cx + d;
+  const float yb = cy - d, yt = cy + d;
   // clang-format off
   float vertices[] = {
     // positions        // start color    // end color      // texture coords
-     0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-    -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 2.0f, // top left
-     0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 2.0f, 2.0f  // top right
+     0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, xr, yb, // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, xl, yb, // bottom left
+    -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, xl, yt, // top left
+     0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, xr, yt  // top right
   };
   // clang-format on
   int va_stride = sizeof(vertices) / num_vertices;
@@ -281,6 +285,8 @@ int main() {
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(texdata);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     // set border color
@@ -306,6 +312,8 @@ int main() {
                  GL_UNSIGNED_BYTE, texdata);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(texdata);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   }
 
   // ====== <Texture /> ======
