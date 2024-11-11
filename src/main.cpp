@@ -18,6 +18,7 @@ void process_input(GLFWwindow *window);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+float mix_value = 0.2f;
 
 std::optional<std::string> read_file_to_string(const std::string &filename) {
   std::ifstream file(filename);
@@ -177,8 +178,8 @@ int main() {
 
   // a proper triangle
   size_t num_vertices = 4;
-  const float cx = 0.3f, cy = 0.5f;
-  const float d = 0.037f;
+  const float cx = 0.5f, cy = 0.5f;
+  const float d = 0.5f;
   const float xl = cx - d, xr = cx + d;
   const float yb = cy - d, yt = cy + d;
   // clang-format off
@@ -344,6 +345,7 @@ int main() {
     float t = (sin(4.0f * time) / 2.0f) + 0.5f;
     int t_location = glGetUniformLocation(shader_program, "t");
     glUniform1f(t_location, t);
+    glUniform1f(glGetUniformLocation(shader_program, "mixValue"), mix_value);
 
     glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -367,6 +369,19 @@ int main() {
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
+
+  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    mix_value += 0.01f;
+    if (mix_value >= 1.0f) {
+      mix_value = 1.0f;
+    }
+  }
+  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    mix_value -= 0.01f;
+    if (mix_value <= 0.0f) {
+      mix_value = 0.0f;
+    }
+  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback
