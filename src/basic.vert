@@ -8,9 +8,11 @@ out vec3 startColor;
 out vec3 endColor;
 out vec2 texCoord;
 
+uniform mat4 transform;
+
 void main() {
   startColor = aStartColor;
   endColor = aEndColor;
   texCoord = aTexCoord;
-  gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+  gl_Position = transform * vec4(aPos, 1.0);
 }
