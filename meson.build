@@ -10,6 +10,7 @@ project(
 
 
 glfw = dependency('glfw3')
+glm = dependency('glm')
 
 inc = include_directories('./deps/glad/include', './deps/stb/include')
 glad = library(
@@ -23,5 +24,5 @@ executable(
   'src/main.cpp',
   include_directories: inc,
   link_with: glad,
-  dependencies: [glfw],
+  dependencies: [glfw, glm],
 )
