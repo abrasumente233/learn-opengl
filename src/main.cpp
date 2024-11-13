@@ -24,6 +24,8 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 float mix_value = 0.2f;
 float fov = 45.0f;
+float camera_z = 3.0f;
+float camera_x = 0.0f;
 
 std::optional<std::string> read_file_to_string(const std::string &filename) {
   std::ifstream file(filename);
@@ -369,7 +371,8 @@ int main() {
     // glm::rotate(model, glm::radians(-20.0f), glm::vec3(1.0f, 0.5f, 0.0f));
 
     glm::mat4 view(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    view = glm::translate(view, -glm::vec3(camera_x, 0.0f, camera_z));
 
     glm::mat4 projection = glm::perspective(
       glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
@@ -414,44 +417,43 @@ int main() {
   return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this
-// frame and react accordingly
+void knob(GLFWwindow *window, int key, float &value, float step, float min,
+          float max) {
+  if (glfwGetKey(window, key) == GLFW_PRESS) {
+    value += step;
+    if (value >= max) {
+      value = max;
+    }
+    if (value <= min) {
+      value = min;
+    }
+  }
+}
+
+// process all input: query GLFW whether relevant keys are pressed/released
+// this frame and react accordingly
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-    mix_value += 0.01f;
-    if (mix_value >= 1.0f) {
-      mix_value = 1.0f;
-    }
-  }
-  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-    mix_value -= 0.01f;
-    if (mix_value <= 0.0f) {
-      mix_value = 0.0f;
-    }
-  }
+  knob(window, GLFW_KEY_UP, mix_value, 0.01f, 0.0f, 1.0f);
+  knob(window, GLFW_KEY_DOWN, mix_value, -0.01f, 0.0f, 1.0f);
 
-  if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-    fov += 1.0f;
-    if (fov >= 90.0f) {
-      fov = 90.0f;
-    }
-  }
+  const float camera_step = 0.025f;
+  knob(window, GLFW_KEY_W, camera_z, -camera_step, -10.0f, 10.0f);
+  knob(window, GLFW_KEY_S, camera_z, camera_step, -10.0f, 10.0f);
+  knob(window, GLFW_KEY_A, camera_x, -camera_step, -10.0f, 10.0f);
+  knob(window, GLFW_KEY_D, camera_x, camera_step, -10.0f, 10.0f);
 
-  if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-    fov -= 1.0f;
-    if (fov <= 1.0f) {
-      fov = 1.0f;
-    }
-  }
+  knob(window, GLFW_KEY_RIGHT, fov, 1.0f, 1.0f, 90.0f);
+  knob(window, GLFW_KEY_LEFT, fov, -1.0f, 1.0f, 90.0f);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback
 // function executes
 void framebuffer_size_callback(GLFWwindow *, int width, int height) {
   // make sure the viewport matches the new window dimensions; note that width
-  // and height will be significantly larger than specified on retina displays.
+  // and height will be significantly larger than specified on retina
+  // displays.
   glViewport(0, 0, width, height);
 }
