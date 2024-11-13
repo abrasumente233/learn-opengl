@@ -353,9 +353,9 @@ int main() {
 
     glm::mat4 trans(1.0f);
     trans =
-      glm::rotate(trans, time, glm::vec3(0.0f, 0.5f, 1.0f));
-    // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-    // trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+      // glm::rotate(trans, time, glm::vec3(0.0f, 0.5f, 1.0f));
+      // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+      trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
 
     unsigned int transform_loc =
       glGetUniformLocation(shader_program, "transform");
@@ -363,14 +363,6 @@ int main() {
 
     glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
-    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned int),
-                   GL_UNSIGNED_INT, 0);
-
-    trans = glm::mat4(1.0f);
-    float sf = (sin(time) / 2.0f) + 0.5f;
-    trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
-    trans = glm::scale(trans, glm::vec3(sf, sf, sf));
-    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
     glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(unsigned int),
                    GL_UNSIGNED_INT, 0);
 
