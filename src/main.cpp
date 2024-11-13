@@ -351,15 +351,23 @@ int main() {
     glUniform1f(t_location, t);
     glUniform1f(glGetUniformLocation(shader_program, "mixValue"), mix_value);
 
-    glm::mat4 trans(1.0f);
-    trans =
-      // glm::rotate(trans, time, glm::vec3(0.0f, 0.5f, 1.0f));
-      // trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-      trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+    glm::mat4 model(1.0f);
+    model =
+      glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-    unsigned int transform_loc =
-      glGetUniformLocation(shader_program, "transform");
-    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
+    glm::mat4 view(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    glm::mat4 projection = glm::perspective(
+      glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+    // glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1,
+                       GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1,
+                       GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1,
+                       GL_FALSE, glm::value_ptr(projection));
 
     glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
