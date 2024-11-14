@@ -25,6 +25,9 @@ const unsigned int SCR_HEIGHT = 600;
 float mix_value = 0.2f;
 float fov = 45.0f;
 
+float last_frame_time = 0.0f;  // Time of last frame
+float frame_delta_time = 0.0f; // Time between current frame and last frame
+
 glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
 
 std::optional<std::string> read_file_to_string(const std::string &filename) {
@@ -353,6 +356,10 @@ int main() {
   glEnable(GL_DEPTH_TEST);
 
   while (!glfwWindowShouldClose(window)) {
+    float current_frame_time = (float)glfwGetTime();
+    frame_delta_time = current_frame_time - last_frame_time;
+    last_frame_time = current_frame_time;
+
     process_input(window);
 
     // render
@@ -444,7 +451,7 @@ void process_input(GLFWwindow *window) {
   knob(window, GLFW_KEY_UP, mix_value, 0.01f, 0.0f, 1.0f);
   knob(window, GLFW_KEY_DOWN, mix_value, -0.01f, 0.0f, 1.0f);
 
-  const float camera_speed = 0.05f;
+  const float camera_speed = 2.5f * frame_delta_time;
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
     camera_pos += camera_speed * glm::vec3(0.0f, 0.0f, -1.0f);
   }
