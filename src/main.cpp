@@ -354,6 +354,7 @@ int main() {
 
   // enable depth test
   glEnable(GL_DEPTH_TEST);
+  float yaw = -90.0f, pitch = 0.0f;
 
   while (!glfwWindowShouldClose(window)) {
     float current_frame_time = (float)glfwGetTime();
@@ -377,9 +378,14 @@ int main() {
     //                     glm::vec3(1.0f, 0.5f, 0.0f));
     // glm::rotate(model, glm::radians(-20.0f), glm::vec3(1.0f, 0.5f, 0.0f));
 
+    pitch += 0.1f;
     // camera coordinate system
-    glm::vec3 camera_target = camera_pos + glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 camera_direction = glm::normalize(camera_pos - camera_target);
+    glm::vec3 camera_direction =
+      -glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
+                sin(glm::radians(pitch)),
+                sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
+
+    glm::vec3 camera_target = camera_pos - camera_direction;
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 camera_right = glm::normalize(glm::cross(up, camera_direction));
     glm::vec3 camera_up =
