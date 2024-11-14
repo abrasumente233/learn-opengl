@@ -356,8 +356,8 @@ int main() {
   glm::vec3 camera_direction = glm::normalize(camera_pos - camera_target);
   glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::vec3 camera_right = glm::normalize(glm::cross(up, camera_direction));
-  glm::vec3 camera_up = glm::normalize(glm::cross(camera_direction, camera_right));
-  glm::mat4 view = glm::lookAt(camera_pos, camera_right, camera_up);
+  glm::vec3 camera_up =
+    glm::normalize(glm::cross(camera_direction, camera_right));
 
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
@@ -376,6 +376,12 @@ int main() {
     // model = glm::rotate(model, time * glm::radians(-55.0f),
     //                     glm::vec3(1.0f, 0.5f, 0.0f));
     // glm::rotate(model, glm::radians(-20.0f), glm::vec3(1.0f, 0.5f, 0.0f));
+
+    const float radius = 10.0f;
+    const float cam_x = sin(time) * radius;
+    const float cam_z = cos(time) * radius;
+    glm::mat4 view =
+      glm::lookAt(glm::vec3(cam_x, 0.0f, cam_z), camera_right, camera_up);
 
     glm::mat4 projection = glm::perspective(
       glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
