@@ -24,8 +24,6 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 float mix_value = 0.2f;
 float fov = 45.0f;
-float camera_z = 3.0f;
-float camera_x = 0.0f;
 
 std::optional<std::string> read_file_to_string(const std::string &filename) {
   std::ifstream file(filename);
@@ -352,6 +350,15 @@ int main() {
   // enable depth test
   glEnable(GL_DEPTH_TEST);
 
+  // camera coordinate system
+  glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
+  glm::vec3 camera_target = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 camera_direction = glm::normalize(camera_pos - camera_target);
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 camera_right = glm::normalize(glm::cross(up, camera_direction));
+  glm::vec3 camera_up = glm::normalize(glm::cross(camera_direction, camera_right));
+  glm::mat4 view = glm::lookAt(camera_pos, camera_right, camera_up);
+
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
 
@@ -369,10 +376,6 @@ int main() {
     // model = glm::rotate(model, time * glm::radians(-55.0f),
     //                     glm::vec3(1.0f, 0.5f, 0.0f));
     // glm::rotate(model, glm::radians(-20.0f), glm::vec3(1.0f, 0.5f, 0.0f));
-
-    glm::mat4 view(1.0f);
-    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    view = glm::translate(view, -glm::vec3(camera_x, 0.0f, camera_z));
 
     glm::mat4 projection = glm::perspective(
       glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
@@ -438,12 +441,6 @@ void process_input(GLFWwindow *window) {
 
   knob(window, GLFW_KEY_UP, mix_value, 0.01f, 0.0f, 1.0f);
   knob(window, GLFW_KEY_DOWN, mix_value, -0.01f, 0.0f, 1.0f);
-
-  const float camera_step = 0.025f;
-  knob(window, GLFW_KEY_W, camera_z, -camera_step, -10.0f, 10.0f);
-  knob(window, GLFW_KEY_S, camera_z, camera_step, -10.0f, 10.0f);
-  knob(window, GLFW_KEY_A, camera_x, -camera_step, -10.0f, 10.0f);
-  knob(window, GLFW_KEY_D, camera_x, camera_step, -10.0f, 10.0f);
 
   knob(window, GLFW_KEY_RIGHT, fov, 1.0f, 1.0f, 90.0f);
   knob(window, GLFW_KEY_LEFT, fov, -1.0f, 1.0f, 90.0f);
