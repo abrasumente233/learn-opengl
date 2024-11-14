@@ -25,6 +25,8 @@ const unsigned int SCR_HEIGHT = 600;
 float mix_value = 0.2f;
 float fov = 45.0f;
 
+glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
+
 std::optional<std::string> read_file_to_string(const std::string &filename) {
   std::ifstream file(filename);
   if (!file.is_open()) {
@@ -350,15 +352,6 @@ int main() {
   // enable depth test
   glEnable(GL_DEPTH_TEST);
 
-  // camera coordinate system
-  glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
-  glm::vec3 camera_target = glm::vec3(0.0f, 0.0f, 0.0f);
-  glm::vec3 camera_direction = glm::normalize(camera_pos - camera_target);
-  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 camera_right = glm::normalize(glm::cross(up, camera_direction));
-  glm::vec3 camera_up =
-    glm::normalize(glm::cross(camera_direction, camera_right));
-
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
 
@@ -377,11 +370,14 @@ int main() {
     //                     glm::vec3(1.0f, 0.5f, 0.0f));
     // glm::rotate(model, glm::radians(-20.0f), glm::vec3(1.0f, 0.5f, 0.0f));
 
-    const float radius = 10.0f;
-    const float cam_x = sin(time) * radius;
-    const float cam_z = cos(time) * radius;
-    glm::mat4 view =
-      glm::lookAt(glm::vec3(cam_x, 0.0f, cam_z), camera_right, camera_up);
+    // camera coordinate system
+    glm::vec3 camera_target = camera_pos + glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 camera_direction = glm::normalize(camera_pos - camera_target);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 camera_right = glm::normalize(glm::cross(up, camera_direction));
+    glm::vec3 camera_up =
+      glm::normalize(glm::cross(camera_direction, camera_right));
+    glm::mat4 view = glm::lookAt(camera_pos, camera_target, camera_up);
 
     glm::mat4 projection = glm::perspective(
       glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
@@ -447,6 +443,27 @@ void process_input(GLFWwindow *window) {
 
   knob(window, GLFW_KEY_UP, mix_value, 0.01f, 0.0f, 1.0f);
   knob(window, GLFW_KEY_DOWN, mix_value, -0.01f, 0.0f, 1.0f);
+
+  const float camera_speed = 0.05f;
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    camera_pos += camera_speed * glm::vec3(0.0f, 0.0f, -1.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    camera_pos += camera_speed * glm::vec3(0.0f, 0.0f, 1.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    camera_pos += camera_speed * glm::vec3(-1.0f, 0.0f, 0.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    camera_pos += camera_speed * glm::vec3(1.0f, 0.0f, 0.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+      glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
+    camera_pos += camera_speed * glm::vec3(0.0f, -1.0f, 0.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    camera_pos += camera_speed * glm::vec3(0.0f, 1.0f, 0.0f);
+  }
 
   knob(window, GLFW_KEY_RIGHT, fov, 1.0f, 1.0f, 90.0f);
   knob(window, GLFW_KEY_LEFT, fov, -1.0f, 1.0f, 90.0f);
