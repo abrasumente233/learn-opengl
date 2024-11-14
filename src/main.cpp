@@ -397,7 +397,15 @@ int main() {
     glm::vec3 camera_x = glm::normalize(glm::cross(up, camera_z));
     glm::vec3 camera_y = glm::normalize(glm::cross(camera_z, camera_x));
 
-    glm::mat4 view = glm::lookAt(camera_pos, camera_target, camera_y);
+    // glm::mat4 view = glm::lookAt(camera_pos, camera_target, camera_y);
+    glm::mat4 view = glm::mat4(1.0f);
+    // clang-format off
+    view = glm::mat4({camera_x.x, camera_y.x, camera_z.x, 0.0f,
+                      camera_x.y, camera_y.y, camera_z.y, 0.0f,
+                      camera_x.z, camera_y.z, camera_z.z, 0.0f,
+                      0.0f,             0.0f,       0.0f, 1.0f});
+    // clang-format on
+    view = glm::translate(view, -camera_pos);
 
     glm::mat4 projection = glm::perspective(
       glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
