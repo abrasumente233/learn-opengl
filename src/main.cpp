@@ -385,16 +385,19 @@ int main() {
 
     // camera coordinate system
     glm::vec3 camera_direction =
-      -glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
-                 sin(glm::radians(pitch)),
-                 sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
+      glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
+                sin(glm::radians(pitch)),
+                sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
 
-    glm::vec3 camera_target = camera_pos - camera_direction;
+    glm::vec3 camera_target = camera_pos + camera_direction;
+
+    // building coordinate system of the camera
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 camera_right = glm::normalize(glm::cross(up, camera_direction));
-    glm::vec3 camera_up =
-      glm::normalize(glm::cross(camera_direction, camera_right));
-    glm::mat4 view = glm::lookAt(camera_pos, camera_target, camera_up);
+    glm::vec3 camera_z = -camera_direction;
+    glm::vec3 camera_x = glm::normalize(glm::cross(up, camera_z));
+    glm::vec3 camera_y = glm::normalize(glm::cross(camera_z, camera_x));
+
+    glm::mat4 view = glm::lookAt(camera_pos, camera_target, camera_y);
 
     glm::mat4 projection = glm::perspective(
       glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
