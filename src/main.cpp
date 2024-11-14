@@ -18,6 +18,7 @@
 #define LEARNGL_DEBUG
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
+void mouse_pos_callback(GLFWwindow *, double xpos, double ypos);
 void process_input(GLFWwindow *window);
 
 const unsigned int SCR_WIDTH = 800;
@@ -29,6 +30,7 @@ float last_frame_time = 0.0f;  // Time of last frame
 float frame_delta_time = 0.0f; // Time between current frame and last frame
 
 glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
+float yaw = -90.0f, pitch = 0.0f;
 
 std::optional<std::string> read_file_to_string(const std::string &filename) {
   std::ifstream file(filename);
@@ -354,7 +356,10 @@ int main() {
 
   // enable depth test
   glEnable(GL_DEPTH_TEST);
-  float yaw = -90.0f, pitch = 0.0f;
+
+  // mouse input
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetCursorPosCallback(window, mouse_pos_callback);
 
   while (!glfwWindowShouldClose(window)) {
     float current_frame_time = (float)glfwGetTime();
@@ -378,12 +383,11 @@ int main() {
     //                     glm::vec3(1.0f, 0.5f, 0.0f));
     // glm::rotate(model, glm::radians(-20.0f), glm::vec3(1.0f, 0.5f, 0.0f));
 
-    pitch += 0.1f;
     // camera coordinate system
     glm::vec3 camera_direction =
       -glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
-                sin(glm::radians(pitch)),
-                sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
+                 sin(glm::radians(pitch)),
+                 sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
 
     glm::vec3 camera_target = camera_pos - camera_direction;
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -480,6 +484,38 @@ void process_input(GLFWwindow *window) {
 
   knob(window, GLFW_KEY_RIGHT, fov, 1.0f, 1.0f, 90.0f);
   knob(window, GLFW_KEY_LEFT, fov, -1.0f, 1.0f, 90.0f);
+}
+
+void mouse_pos_callback(GLFWwindow *, double xpos, double ypos) {
+  static double last_xpos = xpos, last_ypos = ypos;
+  static bool first_call = true;
+
+  if (first_call) {
+    last_xpos = xpos;
+    last_ypos = ypos;
+    first_call = false;
+  }
+
+  double xoffset = xpos - last_xpos;
+  double yoffset = last_ypos - ypos; // reversed since y-coordinates go from
+                                     // bottom to top
+
+  last_xpos = xpos;
+  last_ypos = ypos;
+
+  float sensitivity = 0.05f;
+  xoffset *= sensitivity;
+  yoffset *= sensitivity;
+
+  yaw += xoffset;
+  pitch += yoffset;
+
+  if (pitch > 89.0f) {
+    pitch = 89.0f;
+  }
+  if (pitch < -89.0f) {
+    pitch = -89.0f;
+  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback
