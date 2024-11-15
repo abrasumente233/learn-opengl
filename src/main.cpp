@@ -142,7 +142,8 @@ int main() {
   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nr_attributes);
   printf("Maximum nr of vertex attributes supported: %d\n", nr_attributes);
 
-  unsigned int shader_program = load_shader("src/basic.vert", "src/basic.frag");
+  unsigned int obj_shader = load_shader("src/basic.vert", "src/basic.frag");
+  unsigned int light_shader = load_shader("src/basic.vert", "src/light.frag");
 
   // prepare vertex data
   const float cx = 0.5f, cy = 0.5f;
@@ -223,7 +224,7 @@ int main() {
   }
 
   // set up object VAO
-  unsigned int VAO;
+  unsigned int obj_vao;
   {
     // setup a vertex array object to store vertex attribute configurations.
     // vertex "array" basically means
@@ -231,8 +232,8 @@ int main() {
     //   1) vertex buffer object(s) (VBO) that stores vertex data.
     //   2) vertex attribute pointer(s) that specify how to interpret the data.
     //
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, &obj_vao);
+    glBindVertexArray(obj_vao);
 
     // link vertex attributes
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -245,12 +246,23 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
+  unsigned int light_vao;
+  {
+    glGenVertexArrays(1, &light_vao);
+    glBindVertexArray(light_vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(/* location */ 0, /* size */ 3, GL_FLOAT, GL_FALSE,
+                          /* stride */ va_stride, /* offset */ (void *)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+
   // draw in wireframe polygons.
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-  // since we only have one shader we can activate the shader once here.
-  glUseProgram(shader_program);
 
   // enable depth test
   glEnable(GL_DEPTH_TEST);
@@ -278,9 +290,6 @@ int main() {
 
     glm::vec3 camera_target = camera_pos + camera_direction;
 
-    glm::mat4 model =
-      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-
     // building coordinate system of the camera
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 camera_z = -camera_direction;
@@ -292,17 +301,40 @@ int main() {
     glm::mat4 projection = glm::perspective(
       glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1,
-                       GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1,
-                       GL_FALSE, glm::value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1,
-                       GL_FALSE, glm::value_ptr(projection));
+    {
+      glUseProgram(obj_shader);
+      glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
+      glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
+      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "model"), 1, GL_FALSE,
+                         glm::value_ptr(model));
+      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "view"), 1, GL_FALSE,
+                         glm::value_ptr(view));
+      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "projection"), 1,
+                         GL_FALSE, glm::value_ptr(projection));
 
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+      glUniform3f(glGetUniformLocation(obj_shader, "objectColor"), 1.0f, 0.5f,
+                  0.31f);
+      glUniform3f(glGetUniformLocation(obj_shader, "lightColor"), 1.0f, 1.0f,
+                  1.0f);
 
-    glBindVertexArray(0);
+      glBindVertexArray(obj_vao);
+      glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+    }
+
+    {
+      glUseProgram(light_shader);
+      glm::vec3 pos = glm::vec3(1.2f, 1.0f, 2.0f);
+      glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
+      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "model"), 1, GL_FALSE,
+                         glm::value_ptr(model));
+      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "view"), 1, GL_FALSE,
+                         glm::value_ptr(view));
+      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "projection"), 1,
+                         GL_FALSE, glm::value_ptr(projection));
+
+      glBindVertexArray(light_vao);
+      glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+    }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
     // etc.)
