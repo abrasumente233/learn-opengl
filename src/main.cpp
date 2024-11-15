@@ -15,6 +15,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "camera.hpp"
+
 #define LEARNGL_DEBUG
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -23,13 +25,12 @@ void process_input(GLFWwindow *window);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-float fov = 45.0f;
+const float ASPECT_RATIO = (float)SCR_WIDTH / SCR_HEIGHT;
 
 float last_frame_time = 0.0f;  // Time of last frame
 float frame_delta_time = 0.0f; // Time between current frame and last frame
 
-glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
-float yaw = -90.0f, pitch = 0.0f;
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 std::optional<std::string> read_file_to_string(const std::string &filename) {
   std::ifstream file(filename);
@@ -282,24 +283,8 @@ int main() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // camera coordinate system
-    glm::vec3 camera_direction =
-      glm::vec3(cos(glm::radians(yaw)) * cos(glm::radians(pitch)),
-                sin(glm::radians(pitch)),
-                sin(glm::radians(yaw)) * cos(glm::radians(pitch)));
-
-    glm::vec3 camera_target = camera_pos + camera_direction;
-
-    // building coordinate system of the camera
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 camera_z = -camera_direction;
-    glm::vec3 camera_x = glm::normalize(glm::cross(up, camera_z));
-    glm::vec3 camera_y = glm::normalize(glm::cross(camera_z, camera_x));
-
-    glm::mat4 view = glm::lookAt(camera_pos, camera_target, camera_y);
-
-    glm::mat4 projection = glm::perspective(
-      glm::radians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+    glm::mat4 view = camera.view();
+    glm::mat4 projection = camera.projection(ASPECT_RATIO);
 
     {
       glUseProgram(obj_shader);
@@ -348,48 +333,13 @@ int main() {
   return 0;
 }
 
-void knob(GLFWwindow *window, int key, float &value, float step, float min,
-          float max) {
-  if (glfwGetKey(window, key) == GLFW_PRESS) {
-    value += step;
-    if (value >= max) {
-      value = max;
-    }
-    if (value <= min) {
-      value = min;
-    }
-  }
-}
-
 // process all input: query GLFW whether relevant keys are pressed/released
 // this frame and react accordingly
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  const float camera_speed = 2.5f * frame_delta_time;
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-    camera_pos += camera_speed * glm::vec3(0.0f, 0.0f, -1.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-    camera_pos += camera_speed * glm::vec3(0.0f, 0.0f, 1.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    camera_pos += camera_speed * glm::vec3(-1.0f, 0.0f, 0.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    camera_pos += camera_speed * glm::vec3(1.0f, 0.0f, 0.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
-      glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
-    camera_pos += camera_speed * glm::vec3(0.0f, -1.0f, 0.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-    camera_pos += camera_speed * glm::vec3(0.0f, 1.0f, 0.0f);
-  }
-
-  knob(window, GLFW_KEY_RIGHT, fov, 1.0f, 1.0f, 90.0f);
-  knob(window, GLFW_KEY_LEFT, fov, -1.0f, 1.0f, 90.0f);
+  camera.update_keyboard(window, frame_delta_time);
 }
 
 void mouse_pos_callback(GLFWwindow *, double xpos, double ypos) {
@@ -403,25 +353,13 @@ void mouse_pos_callback(GLFWwindow *, double xpos, double ypos) {
   }
 
   double xoffset = xpos - last_xpos;
-  double yoffset = last_ypos - ypos; // reversed since y-coordinates go from
-                                     // bottom to top
+  // reversed since y-coordinates go from bottom to top
+  double yoffset = last_ypos - ypos;
 
   last_xpos = xpos;
   last_ypos = ypos;
 
-  float sensitivity = 0.05f;
-  xoffset *= sensitivity;
-  yoffset *= sensitivity;
-
-  yaw += xoffset;
-  pitch += yoffset;
-
-  if (pitch > 89.0f) {
-    pitch = 89.0f;
-  }
-  if (pitch < -89.0f) {
-    pitch = -89.0f;
-  }
+  camera.update_mouse(xoffset, yoffset);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback
