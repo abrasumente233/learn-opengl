@@ -325,6 +325,7 @@ int main() {
       glUseProgram(light_shader);
       glm::vec3 pos = glm::vec3(1.2f, 1.0f, 2.0f);
       glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
+      model = glm::scale(model, glm::vec3(0.2f));
       glUniformMatrix4fv(glGetUniformLocation(obj_shader, "model"), 1, GL_FALSE,
                          glm::value_ptr(model));
       glUniformMatrix4fv(glGetUniformLocation(obj_shader, "view"), 1, GL_FALSE,
