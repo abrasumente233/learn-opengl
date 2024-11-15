@@ -1,9 +1,3 @@
-#include <fstream>
-#include <iostream>
-#include <optional>
-#include <sstream>
-#include <string>
-
 #include <glad/glad.h>
 // This line is necessary. glad must be included before glfw.
 #include <GLFW/glfw3.h>
@@ -16,8 +10,7 @@
 #include <stb_image.h>
 
 #include "camera.hpp"
-
-#define LEARNGL_DEBUG
+#include "shader.hpp"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_pos_callback(GLFWwindow *, double xpos, double ypos);
@@ -31,88 +24,6 @@ float last_frame_time = 0.0f;  // Time of last frame
 float frame_delta_time = 0.0f; // Time between current frame and last frame
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-
-std::optional<std::string> read_file_to_string(const std::string &filename) {
-  std::ifstream file(filename);
-  if (!file.is_open()) {
-    return std::nullopt;
-  }
-
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-  return buffer.str();
-}
-
-enum class ShaderType {
-  Vertex,
-  Fragment,
-};
-
-unsigned int compile_shader(const char *source, ShaderType shader_type) {
-  unsigned int shader = glCreateShader(
-    shader_type == ShaderType::Vertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
-
-  glShaderSource(shader, 1, &source, NULL);
-  glCompileShader(shader);
-
-  // check if compile is successful
-  int success;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-  if (!success) {
-
-#ifdef LEARNGL_DEBUG
-    char info_log[512];
-    glGetShaderInfoLog(shader, 512, NULL, info_log);
-    fprintf(stderr, "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n",
-            info_log);
-#endif
-    return 0;
-  }
-
-  return shader;
-}
-
-// link vertex and fragment shader into a shader program.
-// returns the program id
-unsigned int link_shaders(unsigned int vshader, unsigned fshader) {
-  unsigned int shader_program;
-  shader_program = glCreateProgram();
-  glAttachShader(shader_program, vshader);
-  glAttachShader(shader_program, fshader);
-  glLinkProgram(shader_program);
-
-  // check if link is successful
-  int success;
-  glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-  if (!success) {
-
-#ifdef LEARNGL_DEBUG
-    char info_log[512];
-    glGetProgramInfoLog(shader_program, 512, NULL, info_log);
-    fprintf(stderr, "ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n", info_log);
-#endif
-
-    return 0;
-  }
-
-  return shader_program;
-}
-
-unsigned int load_shader(const char *vs_path, const char *fs_path) {
-  auto vs_src = read_file_to_string(vs_path);
-  auto fs_src = read_file_to_string(fs_path);
-  unsigned int vertex_shader =
-    compile_shader(vs_src.value().c_str(), ShaderType::Vertex);
-  unsigned int fragment_shader =
-    compile_shader(fs_src.value().c_str(), ShaderType::Fragment);
-
-  unsigned int shader_program = link_shaders(vertex_shader, fragment_shader);
-
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
-
-  return shader_program;
-}
 
 int main() {
   glfwInit();
@@ -143,8 +54,8 @@ int main() {
   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nr_attributes);
   printf("Maximum nr of vertex attributes supported: %d\n", nr_attributes);
 
-  unsigned int obj_shader = load_shader("src/basic.vert", "src/basic.frag");
-  unsigned int light_shader = load_shader("src/basic.vert", "src/light.frag");
+  Shader obj_shader = Shader("src/basic.vert", "src/basic.frag");
+  Shader light_shader = Shader("src/basic.vert", "src/light.frag");
 
   // prepare vertex data
   const float cx = 0.5f, cy = 0.5f;
@@ -287,36 +198,29 @@ int main() {
     glm::mat4 projection = camera.projection(ASPECT_RATIO);
 
     {
-      glUseProgram(obj_shader);
       glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
       glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
-      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "model"), 1, GL_FALSE,
-                         glm::value_ptr(model));
-      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "view"), 1, GL_FALSE,
-                         glm::value_ptr(view));
-      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "projection"), 1,
-                         GL_FALSE, glm::value_ptr(projection));
 
-      glUniform3f(glGetUniformLocation(obj_shader, "objectColor"), 1.0f, 0.5f,
-                  0.31f);
-      glUniform3f(glGetUniformLocation(obj_shader, "lightColor"), 1.0f, 1.0f,
-                  1.0f);
+      obj_shader.use();
+      obj_shader.set_mat4("model", model);
+      obj_shader.set_mat4("view", view);
+      obj_shader.set_mat4("projection", projection);
+      obj_shader.set_vec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
+      obj_shader.set_vec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
 
       glBindVertexArray(obj_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
     }
 
     {
-      glUseProgram(light_shader);
       glm::vec3 pos = glm::vec3(1.2f, 1.0f, 2.0f);
       glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
       model = glm::scale(model, glm::vec3(0.2f));
-      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "model"), 1, GL_FALSE,
-                         glm::value_ptr(model));
-      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "view"), 1, GL_FALSE,
-                         glm::value_ptr(view));
-      glUniformMatrix4fv(glGetUniformLocation(obj_shader, "projection"), 1,
-                         GL_FALSE, glm::value_ptr(projection));
+
+      light_shader.use();
+      obj_shader.set_mat4("model", model);
+      obj_shader.set_mat4("view", view);
+      obj_shader.set_mat4("projection", projection);
 
       glBindVertexArray(light_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
