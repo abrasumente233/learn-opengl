@@ -64,52 +64,52 @@ int main() {
   const float yb = cy - d, yt = cy + d;
   // clang-format off
   float vertices[] = {
-    // positions         // texture coords
-    // front
-     0.5f, -0.5f,  0.5f, xr, yb, // fbr
-    -0.5f, -0.5f,  0.5f, xl, yb, // fbl
-    -0.5f,  0.5f,  0.5f, xl, yt, // ftl
-     0.5f, -0.5f,  0.5f, xr, yb, // fbr
-    -0.5f,  0.5f,  0.5f, xl, yt, // ftl
-     0.5f,  0.5f,  0.5f, xr, yt, // ftr
-    // right
-     0.5f, -0.5f,  0.5f, xr, yb, // fbr
-     0.5f,  0.5f,  0.5f, xr, yt, // ftr
-     0.5f,  0.5f, -0.5f, xl, yt, // btr
-     0.5f, -0.5f,  0.5f, xr, yb, // fbr
-     0.5f,  0.5f, -0.5f, xl, yt, // btr
-     0.5f, -0.5f, -0.5f, xl, yb, // bbr
-    // bottom
-     0.5f, -0.5f,  0.5f, xr, yb, // fbr
-     0.5f, -0.5f, -0.5f, xl, yb, // bbr
-    -0.5f, -0.5f, -0.5f, xl, yt, // bbl
-     0.5f, -0.5f,  0.5f, xr, yb, // fbr
-    -0.5f, -0.5f, -0.5f, xl, yt, // bbl
-    -0.5f, -0.5f,  0.5f, xr, yt, // fbl
-    // back
-     0.5f,  0.5f, -0.5f, xr, yt, // btr
-    -0.5f,  0.5f, -0.5f, xl, yt, // btl
-    -0.5f, -0.5f, -0.5f, xl, yb, // bbl
-     0.5f,  0.5f, -0.5f, xr, yt, // btr
-    -0.5f, -0.5f, -0.5f, xl, yb, // bbl
-     0.5f, -0.5f, -0.5f, xr, yb, // bbr
-    // left
-    -0.5f,  0.5f,  0.5f, xr, yt, // ftl
-    -0.5f, -0.5f,  0.5f, xr, yb, // fbl
-    -0.5f, -0.5f, -0.5f, xl, yb, // bbl
-    -0.5f,  0.5f,  0.5f, xr, yt, // ftl
-    -0.5f, -0.5f, -0.5f, xl, yb, // bbl
-    -0.5f,  0.5f, -0.5f, xl, yt, // btl
-    // top
-     0.5f,  0.5f,  0.5f, xr, yb, // ftr
-    -0.5f,  0.5f,  0.5f, xl, yb, // ftl
-    -0.5f,  0.5f, -0.5f, xl, yt, // btl
-     0.5f,  0.5f,  0.5f, xr, yb, // ftr
-    -0.5f,  0.5f, -0.5f, xl, yt, // btl
-     0.5f,  0.5f, -0.5f, xr, yt  // btr
+    // positions          // normals           // texture coords
+    // front (normal = 0.0f, 0.0f, 1.0f)
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  xr, yb, // fbr
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  xl, yb, // fbl
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  xl, yt, // ftl
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  xr, yb, // fbr
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  xl, yt, // ftl
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  xr, yt, // ftr
+    // right (normal = 1.0f, 0.0f, 0.0f)
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  xr, yb, // fbr
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  xr, yt, // ftr
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  xl, yt, // btr
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  xr, yb, // fbr
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  xl, yt, // btr
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  xl, yb, // bbr
+    // bottom (normal = 0.0f, -1.0f, 0.0f)
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  xr, yb, // fbr
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  xl, yb, // bbr
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  xl, yt, // bbl
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  xr, yb, // fbr
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  xl, yt, // bbl
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  xr, yt, // fbl
+    // back (normal = 0.0f, 0.0f, -1.0f)
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  xr, yt, // btr
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  xl, yt, // btl
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  xl, yb, // bbl
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  xr, yt, // btr
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  xl, yb, // bbl
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  xr, yb, // bbr
+    // left (normal = -1.0f, 0.0f, 0.0f)
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  xr, yt, // ftl
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  xr, yb, // fbl
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  xl, yb, // bbl
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  xr, yt, // ftl
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  xl, yb, // bbl
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  xl, yt, // btl
+    // top (normal = 0.0f, 1.0f, 0.0f)
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  xr, yb, // ftr
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  xl, yb, // ftl
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  xl, yt, // btl
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  xr, yb, // ftr
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  xl, yt, // btl
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  xr, yt  // btr
   };
   // clang-format on
-  size_t attr_stride = 5 * sizeof(float);
+  size_t attr_stride = 8 * sizeof(float);
   size_t num_vertices = sizeof(vertices) / attr_stride;
   int va_stride = sizeof(vertices) / num_vertices;
 
@@ -152,6 +152,10 @@ int main() {
     glVertexAttribPointer(/* location */ 0, /* size */ 3, GL_FLOAT, GL_FALSE,
                           /* stride */ va_stride, /* offset */ (void *)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(/* location */ 1, /* size */ 3, GL_FLOAT, GL_FALSE,
+                          /* stride */ va_stride,
+                          /* offset */ (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // cleanup
     glBindVertexArray(0);
@@ -196,6 +200,9 @@ int main() {
 
     glm::mat4 view = camera.view();
     glm::mat4 projection = camera.projection(ASPECT_RATIO);
+    glm::vec3 light_pos_world = glm::vec3(1.2f, 1.0f, 2.0f);
+    glm::vec3 light_pos_view = glm::vec3(view * glm::vec4(light_pos_world, 1.0f));
+    glm::mat4 normal_matrix = glm::transpose(glm::inverse(view));
 
     {
       glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
@@ -207,14 +214,15 @@ int main() {
       obj_shader.set_mat4("projection", projection);
       obj_shader.set_vec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
       obj_shader.set_vec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
+      obj_shader.set_vec3("lightPos", light_pos_view);
+      obj_shader.set_mat4("normalMatrix", normal_matrix);
 
       glBindVertexArray(obj_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
     }
 
     {
-      glm::vec3 pos = glm::vec3(1.2f, 1.0f, 2.0f);
-      glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
+      glm::mat4 model = glm::translate(glm::mat4(1.0f), light_pos_world);
       model = glm::scale(model, glm::vec3(0.2f));
 
       light_shader.use();
