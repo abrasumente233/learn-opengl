@@ -226,9 +226,9 @@ int main() {
       model = glm::scale(model, glm::vec3(0.2f));
 
       light_shader.use();
-      obj_shader.set_mat4("model", model);
-      obj_shader.set_mat4("view", view);
-      obj_shader.set_mat4("projection", projection);
+      light_shader.set_mat4("model", model);
+      light_shader.set_mat4("view", view);
+      light_shader.set_mat4("projection", projection);
 
       glBindVertexArray(light_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
