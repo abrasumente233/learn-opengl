@@ -185,8 +185,7 @@ int main() {
     int width, height, n_channels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data =
-      stbi_load("./assets/redstone-lamp.png", &width, &height,
-                &n_channels, 0);
+      stbi_load("./assets/redstone-lamp.png", &width, &height, &n_channels, 0);
     if (!data) {
       fprintf(stderr, "Failed to load texture\n");
       return -1;
@@ -195,7 +194,8 @@ int main() {
     glGenTextures(1, &lamp_tex);
     glBindTexture(GL_TEXTURE_2D, lamp_tex);
     auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
-    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
+                 GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
   }
@@ -225,12 +225,21 @@ int main() {
     glm::mat4 view = camera.view();
     glm::mat4 projection = camera.projection(ASPECT_RATIO);
 
+    float radius = 1.2f;
+    glm::vec3 rotation_center = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 rotation_axis = glm::vec3(0.5f, 1.0f, 1.0f);
+    glm::vec3 rotation_point =
+      radius *
+      glm::normalize(glm::cross(rotation_axis, glm::vec3(0.0f, 1.0f, 0.0f)));
+
     glm::mat4 light_model = glm::mat4(1.0f);
-    light_model = glm::rotate(light_model, time, glm::vec3(0.0f, 0.0f, 1.0f));
-    light_model = glm::translate(light_model, glm::vec3(0.0f, 1.0f, 1.0f));
+    light_model = glm::translate(light_model, rotation_center);
+    light_model = glm::rotate(light_model, time, rotation_axis);
+    light_model = glm::translate(light_model, rotation_point);
     light_model = glm::scale(light_model, glm::vec3(0.2f));
+
     glm::vec3 light_world =
-      glm::vec3(light_model * glm::vec4(0.0f, 0.0f, -0.0f, 1.0f));
+      glm::vec3(light_model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     glm::vec3 light_view = glm::vec3(view * glm::vec4(light_world, 1.0f));
     glm::mat4 normal_matrix = glm::transpose(glm::inverse(view));
 
