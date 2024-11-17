@@ -202,9 +202,8 @@ int main() {
     glm::mat4 projection = camera.projection(ASPECT_RATIO);
 
     glm::mat4 light_model = glm::mat4(1.0f);
-    // light_model = glm::rotate(light_model, time, glm::vec3(0.0f, 1.0f, 1.0f));
-    // light_model = glm::translate(light_model, glm::vec3(0.0f, 1.5f, -1.0f));
-    light_model = glm::translate(light_model, glm::vec3(1.2f, 1.0f, 2.0f));
+    light_model = glm::rotate(light_model, time, glm::vec3(0.0f, 1.0f, 1.0f));
+    light_model = glm::translate(light_model, glm::vec3(0.0f, 1.5f, -1.0f));
     light_model = glm::scale(light_model, glm::vec3(0.2f));
     glm::vec3 light_world =
       glm::vec3(light_model * glm::vec4(0.0f, 0.0f, -0.0f, 1.0f));

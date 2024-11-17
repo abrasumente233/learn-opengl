@@ -2,7 +2,6 @@
 
 in vec3 normal;
 in vec3 fragPos;
-in float phong;
 
 out vec4 FragColor;
 
@@ -29,6 +28,5 @@ void main() {
   float spec = pow(max(dot(viewDirection, reflectDirection), 0.0f), 32);
   vec3 specular = specularStrength * spec * lightColor;
 
-  // FragColor = vec4((ambient + diffuse + specular) * objectColor, 1.0f);
-  FragColor = vec4(phong * lightColor * objectColor, 1.0f);
+  FragColor = vec4((ambient + diffuse + specular) * objectColor, 1.0f);
 }
