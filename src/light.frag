@@ -2,9 +2,12 @@
 
 // in vec3 normal;
 // in vec3 fragPos;
+in vec2 texCoord;
 
 out vec4 FragColor;
 
+uniform sampler2D lampTexture;
+
 void main() {
-  FragColor = vec4(1.0f);
+  FragColor = texture(lampTexture, texCoord);
 }

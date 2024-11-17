@@ -171,9 +171,33 @@ int main() {
     glVertexAttribPointer(/* location */ 0, /* size */ 3, GL_FLOAT, GL_FALSE,
                           /* stride */ va_stride, /* offset */ (void *)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(/* location */ 2, /* size */ 2, GL_FLOAT, GL_FALSE,
+                          /* stride */ va_stride,
+                          /* offset */ (void *)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+
+  unsigned lamp_tex;
+  {
+    int width, height, n_channels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data =
+      stbi_load("./assets/redstone-lamp.png", &width, &height,
+                &n_channels, 0);
+    if (!data) {
+      fprintf(stderr, "Failed to load texture\n");
+      return -1;
+    }
+
+    glGenTextures(1, &lamp_tex);
+    glBindTexture(GL_TEXTURE_2D, lamp_tex);
+    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
+    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
   }
 
   // draw in wireframe polygons.
@@ -202,8 +226,8 @@ int main() {
     glm::mat4 projection = camera.projection(ASPECT_RATIO);
 
     glm::mat4 light_model = glm::mat4(1.0f);
-    light_model = glm::rotate(light_model, time, glm::vec3(0.0f, 1.0f, 1.0f));
-    light_model = glm::translate(light_model, glm::vec3(0.0f, 1.5f, -1.0f));
+    light_model = glm::rotate(light_model, time, glm::vec3(0.0f, 0.0f, 1.0f));
+    light_model = glm::translate(light_model, glm::vec3(0.0f, 1.0f, 1.0f));
     light_model = glm::scale(light_model, glm::vec3(0.2f));
     glm::vec3 light_world =
       glm::vec3(light_model * glm::vec4(0.0f, 0.0f, -0.0f, 1.0f));
@@ -232,6 +256,7 @@ int main() {
       light_shader.set_mat4("model", light_model);
       light_shader.set_mat4("view", view);
       light_shader.set_mat4("projection", projection);
+      light_shader.set_int("lampTexture", 0);
 
       glBindVertexArray(light_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
