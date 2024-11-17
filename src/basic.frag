@@ -14,9 +14,9 @@ void main() {
   float ambientStrength = 0.1f;
   vec3 ambient = ambientStrength * lightColor;
 
-  vec3 norm = normalize(vec3(normalMatrix * vec4(normal, 0.0)));
+  vec3 norm = normalize(vec3(normalMatrix * vec4(normal, 0.0f)));
   vec3 lightDirection = normalize(lightPos - fragPos);
-  float diffuseStrength = dot(norm, lightDirection);
+  float diffuseStrength = max(dot(norm, lightDirection), 0.0f);
   vec3 diffuse = diffuseStrength * lightColor;
 
   FragColor = vec4((ambient + diffuse) * objectColor, 1.0f);
