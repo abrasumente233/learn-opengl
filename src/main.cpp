@@ -188,9 +188,9 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_pos_callback);
 
   while (!glfwWindowShouldClose(window)) {
-    float current_frame_time = (float)glfwGetTime();
-    frame_delta_time = current_frame_time - last_frame_time;
-    last_frame_time = current_frame_time;
+    float time = (float)glfwGetTime();
+    frame_delta_time = time - last_frame_time;
+    last_frame_time = time;
 
     process_input(window);
 
@@ -200,12 +200,18 @@ int main() {
 
     glm::mat4 view = camera.view();
     glm::mat4 projection = camera.projection(ASPECT_RATIO);
-    glm::vec3 light_pos_world = glm::vec3(1.2f, 1.0f, 2.0f);
-    glm::vec3 light_pos_view = glm::vec3(view * glm::vec4(light_pos_world, 1.0f));
+
+    glm::mat4 light_model = glm::mat4(1.0f);
+    light_model = glm::rotate(light_model, time, glm::vec3(0.0f, 1.0f, 1.0f));
+    light_model = glm::translate(light_model, glm::vec3(0.0f, 1.5f, -1.0f));
+    light_model = glm::scale(light_model, glm::vec3(0.2f));
+    glm::vec3 light_world =
+      glm::vec3(light_model * glm::vec4(0.0f, 0.0f, -0.0f, 1.0f));
+    glm::vec3 light_view = glm::vec3(view * glm::vec4(light_world, 1.0f));
     glm::mat4 normal_matrix = glm::transpose(glm::inverse(view));
 
     {
-      glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
+      glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
       glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
 
       obj_shader.use();
@@ -214,7 +220,7 @@ int main() {
       obj_shader.set_mat4("projection", projection);
       obj_shader.set_vec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
       obj_shader.set_vec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-      obj_shader.set_vec3("lightPos", light_pos_view);
+      obj_shader.set_vec3("lightPos", light_view);
       obj_shader.set_mat4("normalMatrix", normal_matrix);
 
       glBindVertexArray(obj_vao);
@@ -222,11 +228,8 @@ int main() {
     }
 
     {
-      glm::mat4 model = glm::translate(glm::mat4(1.0f), light_pos_world);
-      model = glm::scale(model, glm::vec3(0.2f));
-
       light_shader.use();
-      light_shader.set_mat4("model", model);
+      light_shader.set_mat4("model", light_model);
       light_shader.set_mat4("view", view);
       light_shader.set_mat4("projection", projection);
 
