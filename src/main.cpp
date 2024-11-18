@@ -18,7 +18,26 @@
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_pos_callback(GLFWwindow *, double xpos, double ypos);
+void cursor_enter_callback(GLFWwindow *window, int entered);
 void process_input(GLFWwindow *window);
+
+bool camera_active = true;
+void set_camera_active(bool active) {
+  camera_active = active;
+  ImGuiIO &io = ImGui::GetIO();
+  if (active) {
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR,
+                     GLFW_CURSOR_DISABLED);
+  } else {
+    io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad;
+    glfwSetInputMode(glfwGetCurrentContext(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
+}
 
 struct Material {
   const char *name;
@@ -57,8 +76,8 @@ const Material materials[] = {
 };
 // clang-format on
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 800;
 const float ASPECT_RATIO = (float)SCR_WIDTH / SCR_HEIGHT;
 
 float last_frame_time = 0.0f;  // Time of last frame
@@ -106,10 +125,7 @@ int main() {
   {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad
+    set_camera_active(camera_active);
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -281,6 +297,7 @@ int main() {
   // mouse input
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetCursorPosCallback(window, mouse_pos_callback);
+  glfwSetCursorEnterCallback(window, cursor_enter_callback);
 
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
@@ -403,7 +420,15 @@ int main() {
 // this frame and react accordingly
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    static float last_press = 0.0f;
+    float current_time = (float)glfwGetTime();
+
+    // Debounce the ESC key
+    if (current_time - last_press > 0.3f) {
+      bool active = !camera_active;
+      set_camera_active(active);
+    }
+    last_press = current_time;
   }
 
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
@@ -412,11 +437,13 @@ void process_input(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
   }
 
-  camera.update_keyboard(window, frame_delta_time);
+  if (camera_active) {
+    camera.update_keyboard(window, frame_delta_time);
+  }
 }
 
+static double last_xpos = 0.0, last_ypos = 0.0;
 void mouse_pos_callback(GLFWwindow *, double xpos, double ypos) {
-  static double last_xpos = xpos, last_ypos = ypos;
   static bool first_call = true;
 
   if (first_call) {
@@ -432,7 +459,19 @@ void mouse_pos_callback(GLFWwindow *, double xpos, double ypos) {
   last_xpos = xpos;
   last_ypos = ypos;
 
-  camera.update_mouse(xoffset, yoffset);
+  if (camera_active) {
+    camera.update_mouse(xoffset, yoffset);
+  }
+}
+
+void cursor_enter_callback(GLFWwindow *window, int entered) {
+  if (entered) {
+    // Reset mouse position when cursor re-enters window
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    last_xpos = xpos;
+    last_ypos = ypos;
+  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback
