@@ -1,32 +1,40 @@
 #version 330 core
 
+struct Material {
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+  float shininess;
+};
+
+struct Light {
+  vec3 pos;
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+};
+
 in vec3 normal;
 in vec3 fragPos;
 out vec4 FragColor;
 
-uniform vec3 objectColor;
-uniform vec3 lightColor;
-uniform vec3 lightPos;
 uniform mat4 normalMatrix;
-
-// Material properties could be uniforms instead of hardcoded
-const float AMBIENT_STRENGTH = 0.1;
-const float SPECULAR_STRENGTH = 0.5;
-const float SHININESS = 32.0;
+uniform Material material;
+uniform Light light;
 
 vec3 calculateAmbient() {
-    return AMBIENT_STRENGTH * lightColor;
+    return material.ambient * light.ambient;
 }
 
 vec3 calculateDiffuse(vec3 normalizedNormal, vec3 lightDir) {
     float diffuseFactor = max(dot(normalizedNormal, lightDir), 0.0);
-    return diffuseFactor * lightColor;
+    return (diffuseFactor * material.diffuse) * light.diffuse;
 }
 
 vec3 calculateSpecular(vec3 normalizedNormal, vec3 lightDir, vec3 viewDir) {
     vec3 reflectDir = reflect(-lightDir, normalizedNormal);
-    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), SHININESS);
-    return SPECULAR_STRENGTH * specularFactor * lightColor;
+    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    return (specularFactor * material.specular) * light.specular;
 }
 
 void main() {
@@ -34,7 +42,7 @@ void main() {
     vec3 normalWorld = normalize(vec3(normalMatrix * vec4(normal, 0.0)));
     
     // Calculate lighting vectors
-    vec3 lightDir = normalize(lightPos - fragPos);
+    vec3 lightDir = normalize(light.pos - fragPos);
     vec3 viewDir = normalize(-fragPos);
     
     // Calculate lighting components
@@ -43,6 +51,6 @@ void main() {
     vec3 specular = calculateSpecular(normalWorld, lightDir, viewDir);
     
     // Combine all components
-    vec3 finalColor = (ambient + diffuse + specular) * objectColor;
+    vec3 finalColor = ambient + diffuse + specular;
     FragColor = vec4(finalColor, 1.0);
 }
