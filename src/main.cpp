@@ -85,6 +85,61 @@ float frame_delta_time = 0.0f; // Time between current frame and last frame
 
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
+void render_imgui_window(const Camera &camera, float &radius,
+                         glm::vec3 &rotation_center, glm::vec3 &rotation_axis,
+                         glm::vec3 &light_color) {
+  ImGuiIO &io = ImGui::GetIO();
+  ImGui::Begin("LearnOpenGL Console");
+
+  if (ImGui::CollapsingHeader("Stats", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::IsMousePosValid())
+      ImGui::Text("Mouse pos: (%g, %g)", io.MousePos.x, io.MousePos.y);
+
+    ImGui::Text("Frametime: avg %.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+    ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera.position.x,
+                camera.position.y, camera.position.z);
+    ImGui::Text("Camera Yaw: %.2f, Pitch: %.2f", camera.yaw, camera.pitch);
+  }
+
+  if (ImGui::CollapsingHeader("Light Settings",
+                              ImGuiTreeNodeFlags_DefaultOpen)) {
+    static float light_radius = radius;
+    if (ImGui::SliderFloat("Orbit Radius", &light_radius, 1.0f, 10.0f)) {
+      radius = light_radius;
+    }
+
+    static glm::vec3 rotation_center_val = rotation_center;
+    if (ImGui::SliderFloat3("Rotation Center",
+                            glm::value_ptr(rotation_center_val), -10.0f,
+                            10.0f)) {
+      rotation_center = rotation_center_val;
+    }
+
+    static glm::vec3 rotation_axis_val = rotation_axis;
+    if (ImGui::SliderFloat3("Rotation Axis", glm::value_ptr(rotation_axis_val),
+                            -1.0f, 1.0f)) {
+      rotation_axis = glm::normalize(rotation_axis_val);
+    }
+
+    static glm::vec3 light_color_val(1.0f, 1.0f, 1.0f);
+    if (ImGui::ColorEdit3("Light Color", glm::value_ptr(light_color_val))) {
+      light_color = light_color_val;
+    }
+  }
+
+  if (ImGui::CollapsingHeader("Controls")) {
+    ImGui::Text("Camera Controls:");
+    ImGui::BulletText("WASD - Move camera");
+    ImGui::BulletText("Mouse - Look around");
+    ImGui::BulletText("ESC - Toggle camera/cursor");
+    ImGui::BulletText("Cmd+W - Close window");
+  }
+
+  ImGui::End();
+}
+
 int main() {
   glfwInit();
 
@@ -299,6 +354,14 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_pos_callback);
   glfwSetCursorEnterCallback(window, cursor_enter_callback);
 
+  // lighting rotation settings
+  float radius = 4.0f;
+  glm::vec3 rotation_center = glm::vec3(0.0f, 0.0f, 3.0f);
+  glm::vec3 rotation_axis = glm::vec3(0.0f, 0.0f, 1.0f);
+
+  // light color
+  glm::vec3 light_color(1.0f, 1.0f, 1.0f);
+
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
       ImGui_ImplGlfw_Sleep(10);
@@ -310,9 +373,8 @@ int main() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    bool show_demo_window = true;
-    if (show_demo_window)
-      ImGui::ShowDemoWindow(&show_demo_window);
+    render_imgui_window(camera, radius, rotation_center, rotation_axis,
+                        light_color);
 
     ImGui::Render();
 
@@ -328,10 +390,6 @@ int main() {
 
     glm::mat4 view = camera.view();
     glm::mat4 projection = camera.projection(ASPECT_RATIO);
-
-    float radius = 4.0f;
-    glm::vec3 rotation_center = glm::vec3(0.0f, 0.0f, 3.0f);
-    glm::vec3 rotation_axis = glm::vec3(0.0f, 0.0f, 1.0f);
 
     glm::vec3 rotation_point;
     if (abs(rotation_axis.y) < abs(rotation_axis.x)) {
@@ -361,10 +419,9 @@ int main() {
       obj_shader.set_mat4("projection", projection);
       obj_shader.set_mat4("normalMatrix", normal_matrix);
       obj_shader.set_vec3("light.pos", light_view);
-      glm::vec3 light(1.0f, 1.0f, 1.0f);
-      obj_shader.set_vec3("light.ambient", light);
-      obj_shader.set_vec3("light.diffuse", light);
-      obj_shader.set_vec3("light.specular", light);
+      obj_shader.set_vec3("light.ambient", light_color);
+      obj_shader.set_vec3("light.diffuse", light_color);
+      obj_shader.set_vec3("light.specular", light_color);
 
       const size_t nmaterials = sizeof(materials) / sizeof(Material);
       const size_t material_per_row = 5;
