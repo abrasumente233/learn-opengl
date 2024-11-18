@@ -7,8 +7,9 @@ Prerequisites:
 - C/C++ compiler
 
 ```bash
-# we use clang here, but you can use gcc as well
-CC=clang CXX=clang++ meson setup build
+# we use clang here, but you can use gcc as well.
+# OBJCXX is for imgui
+CC=clang CXX=clang++ OBJCXX=clang++ meson setup build
 meson compile -C build && ./build/main
 ```
 

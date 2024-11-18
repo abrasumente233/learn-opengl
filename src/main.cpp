@@ -1,3 +1,7 @@
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include <glad/glad.h>
 // This line is necessary. glad must be included before glfw.
 #include <GLFW/glfw3.h>
@@ -64,12 +68,27 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 int main() {
   glfwInit();
+
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+  // GL ES 2.0 + GLSL 100
+  const char *glsl_version = "#version 100";
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+  // GL 3.2 + GLSL 150
+  const char *glsl_version = "#version 330";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Required on Mac
+#else
+  // GL 3.0 + GLSL 130
+  const char *glsl_version = "#version 130";
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
 #endif
 
   GLFWwindow *window =
@@ -80,7 +99,22 @@ int main() {
     return -1;
   }
   glfwMakeContextCurrent(window);
+  glfwSwapInterval(1); // Enable vsync
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+  // Setup ImGui
+  {
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+  }
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     printf("Failed to initialize GLAD\n");
@@ -249,6 +283,22 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_pos_callback);
 
   while (!glfwWindowShouldClose(window)) {
+    if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
+      ImGui_ImplGlfw_Sleep(10);
+      continue;
+    }
+
+    // Start the ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    bool show_demo_window = true;
+    if (show_demo_window)
+      ImGui::ShowDemoWindow(&show_demo_window);
+
+    ImGui::Render();
+
     float time = (float)glfwGetTime();
     frame_delta_time = time - last_frame_time;
     last_frame_time = time;
@@ -331,11 +381,18 @@ int main() {
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
     }
 
-    // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
-    // etc.)
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // glfw: swap buffers and poll IO events (keys pressed/released, mouse
+    // moved etc.)
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
+
+  // imgui cleanup
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 
   // glfw: terminate, clearing all previously allocated GLFW resources.
   glfwTerminate();
@@ -345,8 +402,15 @@ int main() {
 // process all input: query GLFW whether relevant keys are pressed/released
 // this frame and react accordingly
 void process_input(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS &&
+      (glfwGetKey(window, GLFW_KEY_LEFT_SUPER) == GLFW_PRESS ||
+       glfwGetKey(window, GLFW_KEY_RIGHT_SUPER) == GLFW_PRESS)) {
     glfwSetWindowShouldClose(window, true);
+  }
 
   camera.update_keyboard(window, frame_delta_time);
 }
