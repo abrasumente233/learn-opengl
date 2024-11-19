@@ -2,7 +2,7 @@
 
 struct Material {
   sampler2D diffuse;
-  vec3 specular;
+  sampler2D specular;
   float shininess;
 };
 
@@ -34,7 +34,7 @@ vec3 calculateDiffuse(vec3 normalizedNormal, vec3 lightDir) {
 vec3 calculateSpecular(vec3 normalizedNormal, vec3 lightDir, vec3 viewDir) {
     vec3 reflectDir = reflect(-lightDir, normalizedNormal);
     float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    return (specularFactor * material.specular) * light.specular;
+    return (specularFactor * vec3(texture(material.specular, texCoord))) * light.specular;
 }
 
 void main() {
