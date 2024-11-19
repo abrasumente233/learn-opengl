@@ -87,7 +87,8 @@ Camera camera(glm::vec3(0.0f, 0.0f, 8.0f));
 
 void render_imgui_window(const Camera &camera, float &radius,
                          glm::vec3 &rotation_center, glm::vec3 &rotation_axis,
-                         glm::vec3 &light_color) {
+                         glm::vec3 &light_ambient, glm::vec3 &light_diffuse,
+                         glm::vec3 &light_specular) {
   ImGuiIO &io = ImGui::GetIO();
   ImGui::Begin("LearnOpenGL Console");
 
@@ -123,9 +124,19 @@ void render_imgui_window(const Camera &camera, float &radius,
       rotation_axis = glm::normalize(rotation_axis_val);
     }
 
-    static glm::vec3 light_color_val(1.0f, 1.0f, 1.0f);
-    if (ImGui::ColorEdit3("Light Color", glm::value_ptr(light_color_val))) {
-      light_color = light_color_val;
+    static glm::vec3 light_ambient_val = light_ambient;
+    if (ImGui::ColorEdit3("Ambient", glm::value_ptr(light_ambient_val))) {
+      light_ambient = light_ambient_val;
+    }
+
+    static glm::vec3 light_diffuse_val = light_diffuse;
+    if (ImGui::ColorEdit3("Diffuse", glm::value_ptr(light_diffuse_val))) {
+      light_diffuse = light_diffuse_val;
+    }
+
+    static glm::vec3 light_specular_val = light_specular;
+    if (ImGui::ColorEdit3("Specular", glm::value_ptr(light_specular_val))) {
+      light_specular = light_specular_val;
     }
   }
 
@@ -404,7 +415,9 @@ int main() {
   glm::vec3 rotation_axis = glm::vec3(0.0f, 0.0f, 1.0f);
 
   // light color
-  glm::vec3 light_color(1.0f, 1.0f, 1.0f);
+  glm::vec3 light_ambient(0.1f, 0.1f, 0.1f);
+  glm::vec3 light_diffuse(1.0f, 1.0f, 1.0f);
+  glm::vec3 light_specular(1.0f, 1.0f, 1.0f);
 
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
@@ -418,7 +431,7 @@ int main() {
     ImGui::NewFrame();
 
     render_imgui_window(camera, radius, rotation_center, rotation_axis,
-                        light_color);
+                        light_ambient, light_diffuse, light_specular);
 
     ImGui::Render();
 
@@ -463,9 +476,9 @@ int main() {
       obj_shader.set_mat4("projection", projection);
       obj_shader.set_mat4("normalMatrix", normal_matrix);
       obj_shader.set_vec3("light.pos", light_view);
-      obj_shader.set_vec3("light.ambient", light_color * 0.1f);
-      obj_shader.set_vec3("light.diffuse", light_color);
-      obj_shader.set_vec3("light.specular", light_color);
+      obj_shader.set_vec3("light.ambient", light_ambient);
+      obj_shader.set_vec3("light.diffuse", light_diffuse);
+      obj_shader.set_vec3("light.specular", light_specular);
 
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, container_tex);
