@@ -83,7 +83,7 @@ const float ASPECT_RATIO = (float)SCR_WIDTH / SCR_HEIGHT;
 float last_frame_time = 0.0f;  // Time of last frame
 float frame_delta_time = 0.0f; // Time between current frame and last frame
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 8.0f));
 
 void render_imgui_window(const Camera &camera, float &radius,
                          glm::vec3 &rotation_center, glm::vec3 &rotation_axis,
@@ -298,6 +298,10 @@ int main() {
                           /* stride */ va_stride,
                           /* offset */ (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(/* location */ 2, /* size */ 2, GL_FLOAT, GL_FALSE,
+                          /* stride */ va_stride,
+                          /* offset */ (void *)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // cleanup
     glBindVertexArray(0);
@@ -335,6 +339,26 @@ int main() {
 
     glGenTextures(1, &lamp_tex);
     glBindTexture(GL_TEXTURE_2D, lamp_tex);
+    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
+    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+  }
+
+  unsigned container_tex;
+  {
+    int width, height, n_channels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data =
+      stbi_load("./assets/container2.png", &width, &height, &n_channels, 0);
+    if (!data) {
+      fprintf(stderr, "Failed to load texture\n");
+      return -1;
+    }
+
+    glGenTextures(1, &container_tex);
+    glBindTexture(GL_TEXTURE_2D, container_tex);
     auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
     glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
                  GL_UNSIGNED_BYTE, data);
@@ -419,9 +443,12 @@ int main() {
       obj_shader.set_mat4("projection", projection);
       obj_shader.set_mat4("normalMatrix", normal_matrix);
       obj_shader.set_vec3("light.pos", light_view);
-      obj_shader.set_vec3("light.ambient", light_color);
+      obj_shader.set_vec3("light.ambient", light_color * 0.1f);
       obj_shader.set_vec3("light.diffuse", light_color);
       obj_shader.set_vec3("light.specular", light_color);
+
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, container_tex);
 
       const size_t nmaterials = sizeof(materials) / sizeof(Material);
       const size_t material_per_row = 5;
@@ -435,9 +462,8 @@ int main() {
         glm::vec3 pos = glm::vec3(x, y, 0.0f);
         glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
         obj_shader.set_mat4("model", model);
-        obj_shader.set_vec3("material.ambient", materials[i].ambient);
-        obj_shader.set_vec3("material.diffuse", materials[i].diffuse);
-        obj_shader.set_vec3("material.specular", materials[i].specular);
+        obj_shader.set_int("material.diffuse", 0);
+        obj_shader.set_vec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
         obj_shader.set_float("material.shininess",
                              materials[i].shininess * 128.0f);
         glDrawArrays(GL_TRIANGLES, 0, num_vertices);
@@ -450,6 +476,9 @@ int main() {
       light_shader.set_mat4("view", view);
       light_shader.set_mat4("projection", projection);
       light_shader.set_int("lampTexture", 0);
+
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, lamp_tex);
 
       glBindVertexArray(light_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
