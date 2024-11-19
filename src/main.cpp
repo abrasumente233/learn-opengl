@@ -10,11 +10,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
 #include "camera.hpp"
 #include "shader.hpp"
+#include "texture.hpp"
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_pos_callback(GLFWwindow *, double xpos, double ypos);
@@ -337,65 +335,9 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  unsigned lamp_tex;
-  {
-    int width, height, n_channels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data =
-      stbi_load("./assets/redstone-lamp.png", &width, &height, &n_channels, 0);
-    if (!data) {
-      fprintf(stderr, "Failed to load texture\n");
-      return -1;
-    }
-
-    glGenTextures(1, &lamp_tex);
-    glBindTexture(GL_TEXTURE_2D, lamp_tex);
-    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
-    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
-  }
-
-  unsigned container_tex;
-  {
-    int width, height, n_channels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data =
-      stbi_load("./assets/container2.png", &width, &height, &n_channels, 0);
-    if (!data) {
-      fprintf(stderr, "Failed to load texture\n");
-      return -1;
-    }
-
-    glGenTextures(1, &container_tex);
-    glBindTexture(GL_TEXTURE_2D, container_tex);
-    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
-    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
-  }
-
-  unsigned container_specular_tex;
-  {
-    int width, height, n_channels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load("./assets/container2-specular-map.png",
-                                    &width, &height, &n_channels, 0);
-    if (!data) {
-      fprintf(stderr, "Failed to load texture\n");
-      return -1;
-    }
-
-    glGenTextures(1, &container_specular_tex);
-    glBindTexture(GL_TEXTURE_2D, container_specular_tex);
-    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
-    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
-  }
+  Texture lamp_tex("./assets/redstone-lamp.png");
+  Texture container_tex("./assets/container2.png");
+  Texture container_specular_tex("./assets/container2-specular-map.png");
 
   // draw in wireframe polygons.
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -480,12 +422,8 @@ int main() {
       obj_shader.set_vec3("light.diffuse", light_diffuse);
       obj_shader.set_vec3("light.specular", light_specular);
 
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, container_tex);
-      glActiveTexture(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D, container_specular_tex);
-      obj_shader.set_int("material.diffuse", 0);
-      obj_shader.set_int("material.specular", 1);
+      obj_shader.set_texture("material.diffuse", container_tex, 0);
+      obj_shader.set_texture("material.specular", container_specular_tex, 1);
 
       const size_t nmaterials = sizeof(materials) / sizeof(Material);
       const size_t material_per_row = 5;
@@ -512,8 +450,7 @@ int main() {
       light_shader.set_mat4("projection", projection);
       light_shader.set_int("lampTexture", 0);
 
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, lamp_tex);
+      light_shader.set_texture("lampTexture", lamp_tex, 0);
 
       glBindVertexArray(light_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);

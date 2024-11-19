@@ -9,6 +9,8 @@
 #include <sstream>
 #include <string>
 
+#include "texture.hpp"
+
 class Shader {
 public:
   unsigned int id;
@@ -53,6 +55,12 @@ public:
   void set_mat4(const char *name, const glm::mat4 &value) const {
     glUniformMatrix4fv(glGetUniformLocation(id, name), 1, GL_FALSE,
                        glm::value_ptr(value));
+  }
+
+  void set_texture(const char *name, const Texture &texture, int unit) const {
+    glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_2D, texture.id);
+    set_int(name, unit);
   }
 
 private:
