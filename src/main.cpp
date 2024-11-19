@@ -397,6 +397,27 @@ int main() {
     stbi_image_free(data);
   }
 
+  unsigned matrix_tex;
+  {
+    int width, height, n_channels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load("./assets/matrix.jpg",
+                                    &width, &height, &n_channels, 0);
+    if (!data) {
+      fprintf(stderr, "Failed to load texture\n");
+      return -1;
+    }
+
+    glGenTextures(1, &matrix_tex);
+    glBindTexture(GL_TEXTURE_2D, matrix_tex);
+    auto mode = n_channels == 3 ? GL_RGB : GL_RGBA;
+    glTexImage2D(GL_TEXTURE_2D, 0, mode, width, height, 0, mode,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+  }
+
+
   // draw in wireframe polygons.
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -484,8 +505,11 @@ int main() {
       glBindTexture(GL_TEXTURE_2D, container_tex);
       glActiveTexture(GL_TEXTURE1);
       glBindTexture(GL_TEXTURE_2D, container_specular_tex);
+      glActiveTexture(GL_TEXTURE2);
+      glBindTexture(GL_TEXTURE_2D, matrix_tex);
       obj_shader.set_int("material.diffuse", 0);
       obj_shader.set_int("material.specular", 1);
+      obj_shader.set_int("material.emission", 2);
 
       const size_t nmaterials = sizeof(materials) / sizeof(Material);
       const size_t material_per_row = 5;
