@@ -8,9 +8,14 @@ struct Material {
 
 struct Light {
   vec3 pos;
+
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
+
+  float constant;
+  float linear;
+  float quadratic;
 };
 
 in vec3 normal;
@@ -49,8 +54,12 @@ void main() {
     vec3 ambient = calculateAmbient();
     vec3 diffuse = calculateDiffuse(normalWorld, lightDir);
     vec3 specular = calculateSpecular(normalWorld, lightDir, viewDir);
+
+    // Calculate light decay based on distance
+    float distance = length(light.pos - fragPos);
+    float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     
     // Combine all components
     vec3 finalColor = ambient + diffuse + specular;
-    FragColor = vec4(finalColor, 1.0);
+    FragColor = vec4(attenuation * finalColor, 1.0);
 }

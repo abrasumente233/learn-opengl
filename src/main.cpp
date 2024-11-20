@@ -422,6 +422,10 @@ int main() {
       obj_shader.set_vec3("light.diffuse", light_diffuse);
       obj_shader.set_vec3("light.specular", light_specular);
 
+      obj_shader.set_float("light.constant", 1.0f);
+      obj_shader.set_float("light.linear", 0.09f);
+      obj_shader.set_float("light.quadratic", 0.032f);
+
       obj_shader.set_texture("material.diffuse", container_tex, 0);
       obj_shader.set_texture("material.specular", container_specular_tex, 1);
 
