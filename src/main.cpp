@@ -419,7 +419,8 @@ int main() {
       obj_shader.set_mat4("normalMatrix", normal_matrix);
       obj_shader.set_vec3("light.pos", glm::vec3(0.0f));
       obj_shader.set_vec3("light.dir", glm::vec3(0.0f, 0.0f, -1.0f));
-      obj_shader.set_float("light.cutOff", glm::cos(glm::radians(12.5f)));
+      obj_shader.set_float("light.cutoff", glm::cos(glm::radians(12.5f)));
+      obj_shader.set_float("light.outerCutoff", glm::cos(glm::radians(20.5f)));
       obj_shader.set_vec3("light.ambient", light_ambient);
       obj_shader.set_vec3("light.diffuse", light_diffuse);
       obj_shader.set_vec3("light.specular", light_specular);

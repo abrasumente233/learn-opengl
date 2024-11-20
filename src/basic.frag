@@ -9,7 +9,8 @@ struct Material {
 struct Light {
   vec3 pos;
   vec3 dir;
-  float cutOff;
+  float cutoff;
+  float outerCutoff;
 
   vec3 ambient;
   vec3 diffuse;
@@ -48,6 +49,8 @@ void main() {
     vec3 fragDir = normalize(light.pos - fragPos);
     vec3 viewDir = normalize(-fragPos);
     float theta = dot(normalize(-light.dir), fragDir);
+    float eps = light.cutoff - light.outerCutoff;
+    float intensity = clamp((theta - light.outerCutoff) / eps, 0.0f, 1.0f);
     
     // Calculate lighting components
     vec3 ambient = calculateAmbient();
@@ -55,10 +58,6 @@ void main() {
     vec3 specular = calculateSpecular(normalWorld, fragDir, viewDir);
     
     // Combine all components
-    vec3 finalColor = ambient + diffuse + specular;
-    if (theta > light.cutOff) {
-      FragColor = vec4(finalColor, 1.0);
-    } else {
-      FragColor = vec4(ambient, 1.0);
-    }
+    vec3 finalColor = ambient + (diffuse + specular) * intensity;
+    FragColor = vec4(finalColor, 1.0f);
 }
