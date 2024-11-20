@@ -8,6 +8,9 @@ struct Material {
 
 struct Light {
   vec3 pos;
+  vec3 dir;
+  float cutOff;
+
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
@@ -26,13 +29,13 @@ vec3 calculateAmbient() {
     return vec3(texture(material.diffuse, texCoord)) * light.ambient;
 }
 
-vec3 calculateDiffuse(vec3 normalizedNormal, vec3 lightDir) {
-    float diffuseFactor = max(dot(normalizedNormal, lightDir), 0.0);
+vec3 calculateDiffuse(vec3 normalizedNormal, vec3 fragDir) {
+    float diffuseFactor = max(dot(normalizedNormal, fragDir), 0.0);
     return (diffuseFactor * vec3(texture(material.diffuse, texCoord))) * light.diffuse;
 }
 
-vec3 calculateSpecular(vec3 normalizedNormal, vec3 lightDir, vec3 viewDir) {
-    vec3 reflectDir = reflect(-lightDir, normalizedNormal);
+vec3 calculateSpecular(vec3 normalizedNormal, vec3 fragDir, vec3 viewDir) {
+    vec3 reflectDir = reflect(-fragDir, normalizedNormal);
     float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     return (specularFactor * vec3(texture(material.specular, texCoord))) * light.specular;
 }
@@ -42,15 +45,20 @@ void main() {
     vec3 normalWorld = normalize(vec3(normalMatrix * vec4(normal, 0.0)));
     
     // Calculate lighting vectors
-    vec3 lightDir = normalize(light.pos - fragPos);
+    vec3 fragDir = normalize(light.pos - fragPos);
     vec3 viewDir = normalize(-fragPos);
+    float theta = dot(normalize(-light.dir), fragDir);
     
     // Calculate lighting components
     vec3 ambient = calculateAmbient();
-    vec3 diffuse = calculateDiffuse(normalWorld, lightDir);
-    vec3 specular = calculateSpecular(normalWorld, lightDir, viewDir);
+    vec3 diffuse = calculateDiffuse(normalWorld, fragDir);
+    vec3 specular = calculateSpecular(normalWorld, fragDir, viewDir);
     
     // Combine all components
     vec3 finalColor = ambient + diffuse + specular;
-    FragColor = vec4(finalColor, 1.0);
+    if (theta > light.cutOff) {
+      FragColor = vec4(finalColor, 1.0);
+    } else {
+      FragColor = vec4(ambient, 1.0);
+    }
 }

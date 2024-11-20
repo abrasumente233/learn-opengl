@@ -27,6 +27,11 @@ public:
     return glm::perspective(glm::radians(fov), aspect_ratio, 0.1f, 100.0f);
   }
 
+  glm::vec3 front() const {
+    auto [front, right, up] = calculate_basis();
+    return front;
+  }
+
   void update_keyboard(GLFWwindow *window, float delta_time) {
     float velocity = 2.5f * delta_time;
     auto [front, right, up] = calculate_basis();
