@@ -417,8 +417,7 @@ int main() {
       obj_shader.set_mat4("view", view);
       obj_shader.set_mat4("projection", projection);
       obj_shader.set_mat4("normalMatrix", normal_matrix);
-      // obj_shader.set_vec3("light.pos", light_view);
-      obj_shader.set_vec3("light.dir", normal_matrix * glm::vec4(0.0f, -0.3f, -0.3f, 0.0f));
+      obj_shader.set_vec3("light.pos", light_view);
       obj_shader.set_vec3("light.ambient", light_ambient);
       obj_shader.set_vec3("light.diffuse", light_diffuse);
       obj_shader.set_vec3("light.specular", light_specular);
@@ -446,8 +445,7 @@ int main() {
 
     {
       light_shader.use();
-      // light_shader.set_mat4("model", light_model);
-      light_shader.set_mat4("model", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 5.0f)));
+      light_shader.set_mat4("model", light_model);
       light_shader.set_mat4("view", view);
       light_shader.set_mat4("projection", projection);
       light_shader.set_int("lampTexture", 0);
