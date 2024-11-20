@@ -7,7 +7,10 @@ struct Material {
 };
 
 struct Light {
-  vec3 pos;
+  // no longer necessary when using directional light
+  // vec3 pos;
+  vec3 dir;
+
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
@@ -42,7 +45,8 @@ void main() {
     vec3 normalWorld = normalize(vec3(normalMatrix * vec4(normal, 0.0)));
     
     // Calculate lighting vectors
-    vec3 lightDir = normalize(light.pos - fragPos);
+    // vec3 lightDir = normalize(light.pos - fragPos);
+    vec3 lightDir = normalize(-light.dir);
     vec3 viewDir = normalize(-fragPos);
     
     // Calculate lighting components
