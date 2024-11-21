@@ -63,6 +63,31 @@ public:
     set_int(name, unit);
   }
 
+  void set_bool(const std::string &name, bool value) const {
+    set_bool(name.c_str(), value);
+  }
+
+  void set_int(const std::string &name, int value) const {
+    set_int(name.c_str(), value);
+  }
+
+  void set_float(const std::string &name, float value) const {
+    set_float(name.c_str(), value);
+  }
+
+  void set_vec3(const std::string &name, const glm::vec3 &value) const {
+    set_vec3(name.c_str(), value);
+  }
+
+  void set_mat4(const std::string &name, const glm::mat4 &value) const {
+    set_mat4(name.c_str(), value);
+  }
+
+  void set_texture(const std::string &name, const Texture &texture,
+                   int unit) const {
+    set_texture(name.c_str(), texture, unit);
+  }
+
 private:
   std::optional<std::string> read_file_to_string(const std::string &filename) {
     std::ifstream file(filename);

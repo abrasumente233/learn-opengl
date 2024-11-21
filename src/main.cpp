@@ -85,7 +85,8 @@ Camera camera(glm::vec3(0.0f, 0.0f, 8.0f));
 
 void render_imgui_window(const Camera &camera, float &radius,
                          glm::vec3 &rotation_center, glm::vec3 &rotation_axis,
-                         glm::vec3 &spotlight_ambient, glm::vec3 &spotlight_diffuse,
+                         glm::vec3 &spotlight_ambient,
+                         glm::vec3 &spotlight_diffuse,
                          glm::vec3 &spotlight_specular) {
   ImGuiIO &io = ImGui::GetIO();
   ImGui::Begin("LearnOpenGL Console");
@@ -373,7 +374,8 @@ int main() {
     ImGui::NewFrame();
 
     render_imgui_window(camera, radius, rotation_center, rotation_axis,
-                        spotlight_ambient, spotlight_diffuse, spotlight_specular);
+                        spotlight_ambient, spotlight_diffuse,
+                        spotlight_specular);
 
     ImGui::Render();
 
@@ -412,6 +414,10 @@ int main() {
     glm::vec3 light_view = glm::vec3(view * glm::vec4(light_world, 1.0f));
     glm::mat4 normal_matrix = glm::transpose(glm::inverse(view));
 
+    glm::vec3 point_light_pos[4] = {
+      glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
+      glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
+
     {
       obj_shader.use();
       obj_shader.set_mat4("view", view);
@@ -420,14 +426,30 @@ int main() {
       obj_shader.set_vec3("spotlight.pos", glm::vec3(0.0f));
       obj_shader.set_vec3("spotlight.dir", glm::vec3(0.0f, 0.0f, -1.0f));
       obj_shader.set_float("spotlight.cutoff", glm::cos(glm::radians(12.5f)));
-      obj_shader.set_float("spotlight.outerCutoff", glm::cos(glm::radians(20.5f)));
+      obj_shader.set_float("spotlight.outerCutoff",
+                           glm::cos(glm::radians(20.5f)));
       obj_shader.set_vec3("spotlight.ambient", spotlight_ambient);
       obj_shader.set_vec3("spotlight.diffuse", spotlight_diffuse);
       obj_shader.set_vec3("spotlight.specular", spotlight_specular);
-      obj_shader.set_vec3("directionalLight.dir", glm::vec3(0.0f, -1.0f, -1.0f));
+
+      obj_shader.set_vec3("directionalLight.dir",
+                          glm::vec3(0.0f, -1.0f, -1.0f));
       obj_shader.set_vec3("directionalLight.ambient", glm::vec3(0.05f));
       obj_shader.set_vec3("directionalLight.diffuse", glm::vec3(0.4f));
       obj_shader.set_vec3("directionalLight.specular", glm::vec3(0.5f));
+
+      for (size_t i = 0; i < 4; i++) {
+        std::string name = "pointLights[" + std::to_string(i) + "]";
+        glm::vec3 viewPos =
+          glm::vec3(view * glm::vec4(point_light_pos[i], 1.0f));
+        obj_shader.set_vec3(name + ".pos", viewPos);
+        obj_shader.set_float(name + ".constant", 1.0f);
+        obj_shader.set_float(name + ".linear", 0.09f);
+        obj_shader.set_float(name + ".quadratic", 0.032f);
+        obj_shader.set_vec3(name + ".ambient", glm::vec3(0.05f));
+        obj_shader.set_vec3(name + ".diffuse", glm::vec3(0.8f));
+        obj_shader.set_vec3(name + ".specular", glm::vec3(1.0f));
+      }
 
       obj_shader.set_texture("material.diffuse", container_tex, 0);
       obj_shader.set_texture("material.specular", container_specular_tex, 1);
@@ -450,12 +472,16 @@ int main() {
       }
     }
 
-    {
+    for (int i = 0; i < 4; i++) {
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, point_light_pos[i]);
+      model = glm::scale(model, glm::vec3(0.2f));
+
       light_shader.use();
-      light_shader.set_mat4("model", light_model);
+      light_shader.set_mat4("model", model);
       light_shader.set_mat4("view", view);
       light_shader.set_mat4("projection", projection);
-      light_shader.set_int("lampTexture", 0);
+      light_shader.set_vec3("lightColor", glm::vec3(1.0f));
 
       light_shader.set_texture("lampTexture", lamp_tex, 0);
 
