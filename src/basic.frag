@@ -1,28 +1,28 @@
 #version 330 core
 
 struct Material {
-  sampler2D diffuse;
-  sampler2D specular;
-  float shininess;
+    sampler2D diffuse;
+    sampler2D specular;
+    float shininess;
 };
 
 struct DirectionalLight {
-  vec3 dir;
+    vec3 dir;
 
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
 };
 
 struct Spotlight {
-  vec3 pos;
-  vec3 dir;
-  float cutoff;
-  float outerCutoff;
+    vec3 pos;
+    vec3 dir;
+    float cutoff;
+    float outerCutoff;
 
-  vec3 ambient;
-  vec3 diffuse;
-  vec3 specular;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
 };
 
 in vec3 normal;
@@ -63,24 +63,24 @@ vec3 calculateSpotlight(Spotlight spotlight, vec3 fragDir, vec3 viewDir, vec3 no
 }
 
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 viewDir, vec3 normalView) {
-  vec3 lightDirWorld = normalize(-light.dir);
-  vec3 lightDirView = normalize(vec3(normalMatrix * vec4(lightDirWorld, 0.0)));
+    vec3 lightDirWorld = normalize(-light.dir);
+    vec3 lightDirView = normalize(vec3(normalMatrix * vec4(lightDirWorld, 0.0)));
 
-  vec3 ambient = calculateAmbient(light.ambient);
-  vec3 diffuse = calculateDiffuse(light.diffuse, normalView, lightDirView);
-  vec3 specular = calculateSpecular(light.specular, normalView, lightDirView, viewDir);
+    vec3 ambient = calculateAmbient(light.ambient);
+    vec3 diffuse = calculateDiffuse(light.diffuse, normalView, lightDirView);
+    vec3 specular = calculateSpecular(light.specular, normalView, lightDirView, viewDir);
 
-  return ambient + diffuse + specular;
+    return ambient + diffuse + specular;
 }
 
 void main() {
     // Transform normal to view space
     vec3 normalView = normalize(vec3(normalMatrix * vec4(normal, 0.0)));
-    
+
     // Calculate lighting vectors
     vec3 fragDir = normalize(spotlight.pos - fragPos);
     vec3 viewDir = normalize(-fragPos);
-    
+
     vec3 finalColor = vec3(0.0f);
     finalColor += calculateSpotlight(spotlight, fragDir, viewDir, normalView);
     finalColor += calculateDirectionalLight(directionalLight, viewDir, normalView);
