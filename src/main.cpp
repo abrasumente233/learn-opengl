@@ -424,6 +424,10 @@ int main() {
       obj_shader.set_vec3("spotlight.ambient", spotlight_ambient);
       obj_shader.set_vec3("spotlight.diffuse", spotlight_diffuse);
       obj_shader.set_vec3("spotlight.specular", spotlight_specular);
+      obj_shader.set_vec3("directionalLight.dir", glm::vec3(0.0f, -1.0f, -1.0f));
+      obj_shader.set_vec3("directionalLight.ambient", glm::vec3(0.05f));
+      obj_shader.set_vec3("directionalLight.diffuse", glm::vec3(0.4f));
+      obj_shader.set_vec3("directionalLight.specular", glm::vec3(0.5f));
 
       obj_shader.set_texture("material.diffuse", container_tex, 0);
       obj_shader.set_texture("material.specular", container_specular_tex, 1);
