@@ -47,7 +47,8 @@ void set_camera_active(bool active) {
 }
 
 void render_imgui_window(
-  const Camera &camera, glm::vec3 &spotlight_ambient,
+  const Camera &camera, bool &spotlight_enabled, float &spotlight_cutoff,
+  float &spotlight_outer_cutoff, glm::vec3 &spotlight_ambient,
   glm::vec3 &spotlight_diffuse, glm::vec3 &spotlight_specular,
   glm::vec3 &directional_dir, glm::vec3 &directional_ambient,
   glm::vec3 &directional_diffuse, glm::vec3 &directional_specular,
@@ -73,11 +74,18 @@ void render_imgui_window(
   }
 
   if (ImGui::CollapsingHeader("Spotlight", ImGuiTreeNodeFlags_DefaultOpen)) {
+    ImGui::Checkbox("Enabled##Spot", &spotlight_enabled);
     ImGui::ColorEdit3("Ambient##Spot", glm::value_ptr(spotlight_ambient));
     ImGui::ColorEdit3("Diffuse##Spot", glm::value_ptr(spotlight_diffuse));
     ImGui::ColorEdit3("Specular##Spot", glm::value_ptr(spotlight_specular));
-  }
+    ImGui::SliderFloat("Cutoff Angle##Spot", &spotlight_cutoff, 0.0f, 90.0f);
+    ImGui::SliderFloat("Outer Cutoff Angle##Spot", &spotlight_outer_cutoff,
+                       0.0f, 90.0f);
 
+    // Keep outer cutoff always larger than inner cutoff
+    if (spotlight_outer_cutoff < spotlight_cutoff)
+      spotlight_outer_cutoff = spotlight_cutoff;
+  }
   if (ImGui::CollapsingHeader("Point Lights", ImGuiTreeNodeFlags_DefaultOpen)) {
     // Attenuation settings
     ImGui::Text("Attenuation:");
@@ -334,6 +342,10 @@ int main() {
   float point_light_linear = 0.09f;
   float point_light_quadratic = 0.032f;
 
+  bool spotlight_enabled = true;
+  float spotlight_cutoff = 12.5f;
+  float spotlight_outer_cutoff = 20.5f;
+
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
       ImGui_ImplGlfw_Sleep(10);
@@ -346,7 +358,9 @@ int main() {
     ImGui::NewFrame();
 
     render_imgui_window(
-      camera, spotlight_ambient, spotlight_diffuse, spotlight_specular,
+      camera,
+      spotlight_enabled, spotlight_cutoff, spotlight_outer_cutoff,
+      spotlight_ambient, spotlight_diffuse, spotlight_specular,
       directional_dir, directional_ambient, directional_diffuse,
       directional_specular, point_light_positions, point_light_colors,
       point_light_constant, point_light_linear, point_light_quadratic);
@@ -398,12 +412,20 @@ int main() {
       obj_shader.set_mat4("normalMatrix", normal_matrix);
       obj_shader.set_vec3("spotlight.pos", glm::vec3(0.0f));
       obj_shader.set_vec3("spotlight.dir", glm::vec3(0.0f, 0.0f, -1.0f));
-      obj_shader.set_float("spotlight.cutoff", glm::cos(glm::radians(12.5f)));
+      obj_shader.set_float("spotlight.cutoff",
+                           glm::cos(glm::radians(spotlight_cutoff)));
       obj_shader.set_float("spotlight.outerCutoff",
-                           glm::cos(glm::radians(20.5f)));
-      obj_shader.set_vec3("spotlight.ambient", spotlight_ambient);
-      obj_shader.set_vec3("spotlight.diffuse", spotlight_diffuse);
-      obj_shader.set_vec3("spotlight.specular", spotlight_specular);
+                           glm::cos(glm::radians(spotlight_outer_cutoff)));
+
+      if (spotlight_enabled) {
+        obj_shader.set_vec3("spotlight.ambient", spotlight_ambient);
+        obj_shader.set_vec3("spotlight.diffuse", spotlight_diffuse);
+        obj_shader.set_vec3("spotlight.specular", spotlight_specular);
+      } else {
+        obj_shader.set_vec3("spotlight.ambient", glm::vec3(0.0f));
+        obj_shader.set_vec3("spotlight.diffuse", glm::vec3(0.0f));
+        obj_shader.set_vec3("spotlight.specular", glm::vec3(0.0f));
+      }
 
       obj_shader.set_vec3("directionalLight.dir", directional_dir);
       obj_shader.set_vec3("directionalLight.ambient", directional_ambient);
