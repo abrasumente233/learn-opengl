@@ -14,6 +14,15 @@
 #include "shader.hpp"
 #include "texture.hpp"
 
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 800;
+const float ASPECT_RATIO = (float)SCR_WIDTH / SCR_HEIGHT;
+
+float last_frame_time = 0.0f;  // Time of last frame
+float frame_delta_time = 0.0f; // Time between current frame and last frame
+
+Camera camera(glm::vec3(0.0f, 0.0f, 8.0f));
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_pos_callback(GLFWwindow *, double xpos, double ypos);
 void cursor_enter_callback(GLFWwindow *window, int entered);
@@ -37,68 +46,53 @@ void set_camera_active(bool active) {
   }
 }
 
-const unsigned int SCR_WIDTH = 1600;
-const unsigned int SCR_HEIGHT = 800;
-const float ASPECT_RATIO = (float)SCR_WIDTH / SCR_HEIGHT;
+void render_imgui_window(
+  const Camera &camera, glm::vec3 &spotlight_ambient,
+  glm::vec3 &spotlight_diffuse, glm::vec3 &spotlight_specular,
+  glm::vec3 &directional_dir, glm::vec3 &directional_ambient,
+  glm::vec3 &directional_diffuse, glm::vec3 &directional_specular,
+  std::array<glm::vec3, 4> &point_light_positions,
+  std::array<glm::vec3, 4> &point_light_colors, float &point_light_constant,
+  float &point_light_linear, float &point_light_quadratic) {
 
-float last_frame_time = 0.0f;  // Time of last frame
-float frame_delta_time = 0.0f; // Time between current frame and last frame
-
-Camera camera(glm::vec3(0.0f, 0.0f, 8.0f));
-
-void render_imgui_window(const Camera &camera, float &radius,
-                         glm::vec3 &rotation_center, glm::vec3 &rotation_axis,
-                         glm::vec3 &spotlight_ambient,
-                         glm::vec3 &spotlight_diffuse,
-                         glm::vec3 &spotlight_specular) {
-  ImGuiIO &io = ImGui::GetIO();
-  ImGui::Begin("LearnOpenGL Console");
+  ImGui::Begin("Scene Controls");
 
   if (ImGui::CollapsingHeader("Stats", ImGuiTreeNodeFlags_DefaultOpen)) {
-    if (ImGui::IsMousePosValid())
-      ImGui::Text("Mouse pos: (%g, %g)", io.MousePos.x, io.MousePos.y);
-
-    ImGui::Text("Frametime: avg %.3f ms/frame (%.1f FPS)",
-                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
+    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera.position.x,
                 camera.position.y, camera.position.z);
     ImGui::Text("Camera Yaw: %.2f, Pitch: %.2f", camera.yaw, camera.pitch);
   }
 
-  if (ImGui::CollapsingHeader("Light Settings",
+  if (ImGui::CollapsingHeader("Directional Light",
                               ImGuiTreeNodeFlags_DefaultOpen)) {
-    static float light_radius = radius;
-    if (ImGui::SliderFloat("Orbit Radius", &light_radius, 1.0f, 10.0f)) {
-      radius = light_radius;
-    }
+    ImGui::DragFloat3("Direction##Dir", glm::value_ptr(directional_dir), 0.1f);
+    ImGui::ColorEdit3("Ambient##Dir", glm::value_ptr(directional_ambient));
+    ImGui::ColorEdit3("Diffuse##Dir", glm::value_ptr(directional_diffuse));
+    ImGui::ColorEdit3("Specular##Dir", glm::value_ptr(directional_specular));
+  }
 
-    static glm::vec3 rotation_center_val = rotation_center;
-    if (ImGui::SliderFloat3("Rotation Center",
-                            glm::value_ptr(rotation_center_val), -10.0f,
-                            10.0f)) {
-      rotation_center = rotation_center_val;
-    }
+  if (ImGui::CollapsingHeader("Spotlight", ImGuiTreeNodeFlags_DefaultOpen)) {
+    ImGui::ColorEdit3("Ambient##Spot", glm::value_ptr(spotlight_ambient));
+    ImGui::ColorEdit3("Diffuse##Spot", glm::value_ptr(spotlight_diffuse));
+    ImGui::ColorEdit3("Specular##Spot", glm::value_ptr(spotlight_specular));
+  }
 
-    static glm::vec3 rotation_axis_val = rotation_axis;
-    if (ImGui::SliderFloat3("Rotation Axis", glm::value_ptr(rotation_axis_val),
-                            -1.0f, 1.0f)) {
-      rotation_axis = glm::normalize(rotation_axis_val);
-    }
+  if (ImGui::CollapsingHeader("Point Lights", ImGuiTreeNodeFlags_DefaultOpen)) {
+    // Attenuation settings
+    ImGui::Text("Attenuation:");
+    ImGui::SliderFloat("Constant", &point_light_constant, 0.0f, 1.0f);
+    ImGui::SliderFloat("Linear", &point_light_linear, 0.0f, 1.0f);
+    ImGui::SliderFloat("Quadratic", &point_light_quadratic, 0.0f, 1.0f);
 
-    static glm::vec3 spotlight_ambient_val = spotlight_ambient;
-    if (ImGui::ColorEdit3("Ambient", glm::value_ptr(spotlight_ambient_val))) {
-      spotlight_ambient = spotlight_ambient_val;
-    }
-
-    static glm::vec3 spotlight_diffuse_val = spotlight_diffuse;
-    if (ImGui::ColorEdit3("Diffuse", glm::value_ptr(spotlight_diffuse_val))) {
-      spotlight_diffuse = spotlight_diffuse_val;
-    }
-
-    static glm::vec3 spotlight_specular_val = spotlight_specular;
-    if (ImGui::ColorEdit3("Specular", glm::value_ptr(spotlight_specular_val))) {
-      spotlight_specular = spotlight_specular_val;
+    // Individual point light controls
+    for (int i = 0; i < 4; i++) {
+      if (ImGui::TreeNode(("Point Light " + std::to_string(i + 1)).c_str())) {
+        ImGui::DragFloat3("Position", glm::value_ptr(point_light_positions[i]),
+                          0.1f);
+        ImGui::ColorEdit3("Color", glm::value_ptr(point_light_colors[i]));
+        ImGui::TreePop();
+      }
     }
   }
 
@@ -316,14 +310,29 @@ int main() {
   glfwSetCursorEnterCallback(window, cursor_enter_callback);
 
   // lighting rotation settings
-  float radius = 4.0f;
-  glm::vec3 rotation_center = glm::vec3(0.0f, 0.0f, 3.0f);
-  glm::vec3 rotation_axis = glm::vec3(0.0f, 0.0f, 1.0f);
+  // float radius = 4.0f;
+  // glm::vec3 rotation_center = glm::vec3(0.0f, 0.0f, 3.0f);
+  // glm::vec3 rotation_axis = glm::vec3(0.0f, 0.0f, 1.0f);
 
   // light color
   glm::vec3 spotlight_ambient(0.1f, 0.1f, 0.1f);
   glm::vec3 spotlight_diffuse(1.0f, 1.0f, 1.0f);
   glm::vec3 spotlight_specular(1.0f, 1.0f, 1.0f);
+
+  glm::vec3 directional_dir(0.0f, -1.0f, -1.0f);
+  glm::vec3 directional_ambient(0.05f);
+  glm::vec3 directional_diffuse(0.4f);
+  glm::vec3 directional_specular(0.5f);
+
+  std::array<glm::vec3, 4> point_light_positions = {
+    glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
+    glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
+
+  std::array<glm::vec3, 4> point_light_colors = {
+    glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f)};
+  float point_light_constant = 1.0f;
+  float point_light_linear = 0.09f;
+  float point_light_quadratic = 0.032f;
 
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
@@ -336,9 +345,11 @@ int main() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    render_imgui_window(camera, radius, rotation_center, rotation_axis,
-                        spotlight_ambient, spotlight_diffuse,
-                        spotlight_specular);
+    render_imgui_window(
+      camera, spotlight_ambient, spotlight_diffuse, spotlight_specular,
+      directional_dir, directional_ambient, directional_diffuse,
+      directional_specular, point_light_positions, point_light_colors,
+      point_light_constant, point_light_linear, point_light_quadratic);
 
     ImGui::Render();
 
@@ -380,10 +391,6 @@ int main() {
 
     glm::mat4 normal_matrix = glm::transpose(glm::inverse(view));
 
-    glm::vec3 point_light_pos[4] = {
-      glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
-      glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
-
     {
       obj_shader.use();
       obj_shader.set_mat4("view", view);
@@ -398,23 +405,22 @@ int main() {
       obj_shader.set_vec3("spotlight.diffuse", spotlight_diffuse);
       obj_shader.set_vec3("spotlight.specular", spotlight_specular);
 
-      obj_shader.set_vec3("directionalLight.dir",
-                          glm::vec3(0.0f, -1.0f, -1.0f));
-      obj_shader.set_vec3("directionalLight.ambient", glm::vec3(0.05f));
-      obj_shader.set_vec3("directionalLight.diffuse", glm::vec3(0.4f));
-      obj_shader.set_vec3("directionalLight.specular", glm::vec3(0.5f));
+      obj_shader.set_vec3("directionalLight.dir", directional_dir);
+      obj_shader.set_vec3("directionalLight.ambient", directional_ambient);
+      obj_shader.set_vec3("directionalLight.diffuse", directional_diffuse);
+      obj_shader.set_vec3("directionalLight.specular", directional_specular);
 
       for (size_t i = 0; i < 4; i++) {
         std::string name = "pointLights[" + std::to_string(i) + "]";
         glm::vec3 viewPos =
-          glm::vec3(view * glm::vec4(point_light_pos[i], 1.0f));
+          glm::vec3(view * glm::vec4(point_light_positions[i], 1.0f));
         obj_shader.set_vec3(name + ".pos", viewPos);
-        obj_shader.set_float(name + ".constant", 1.0f);
-        obj_shader.set_float(name + ".linear", 0.09f);
-        obj_shader.set_float(name + ".quadratic", 0.032f);
-        obj_shader.set_vec3(name + ".ambient", glm::vec3(0.05f));
-        obj_shader.set_vec3(name + ".diffuse", glm::vec3(0.8f));
-        obj_shader.set_vec3(name + ".specular", glm::vec3(1.0f));
+        obj_shader.set_float(name + ".constant", point_light_constant);
+        obj_shader.set_float(name + ".linear", point_light_linear);
+        obj_shader.set_float(name + ".quadratic", point_light_quadratic);
+        obj_shader.set_vec3(name + ".ambient", point_light_colors[i] * 0.05f);
+        obj_shader.set_vec3(name + ".diffuse", point_light_colors[i] * 0.8f);
+        obj_shader.set_vec3(name + ".specular", point_light_colors[i]);
       }
 
       obj_shader.set_texture("material.diffuse", container_tex, 0);
@@ -439,7 +445,7 @@ int main() {
 
     for (int i = 0; i < 4; i++) {
       glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, point_light_pos[i]);
+      model = glm::translate(model, point_light_positions[i]);
       model = glm::scale(model, glm::vec3(0.2f));
 
       light_shader.use();
