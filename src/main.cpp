@@ -474,7 +474,6 @@ int main() {
       light_shader.set_mat4("model", model);
       light_shader.set_mat4("view", view);
       light_shader.set_mat4("projection", projection);
-      light_shader.set_vec3("lightColor", glm::vec3(1.0f));
 
       light_shader.set_texture("lampTexture", lamp_tex, 0);
 
