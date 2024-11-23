@@ -39,10 +39,12 @@ glad = library(
   include_directories: inc
 )
 
-executable(
+exe = executable(
   'main',
   'src/main.cpp',
   include_directories: inc,
   link_with: glad,
   dependencies: [glfw, glm, imgui, assimp_dep],
 )
+
+test('main', exe, workdir: meson.current_source_dir(), is_parallel: false, timeout: 0)
