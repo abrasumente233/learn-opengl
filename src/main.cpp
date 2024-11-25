@@ -58,6 +58,14 @@ void render_imgui_window(
 
   ImGui::Begin("Scene Controls");
 
+  if (ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen)) {
+    ImGui::Text("Camera Controls:");
+    ImGui::BulletText("WASD - Move camera");
+    ImGui::BulletText("Mouse - Look around");
+    ImGui::BulletText("ESC - Toggle camera/cursor");
+    ImGui::BulletText("Cmd+W - Close window");
+  }
+
   if (ImGui::CollapsingHeader("Stats", ImGuiTreeNodeFlags_DefaultOpen)) {
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera.position.x,
@@ -102,14 +110,6 @@ void render_imgui_window(
         ImGui::TreePop();
       }
     }
-  }
-
-  if (ImGui::CollapsingHeader("Controls")) {
-    ImGui::Text("Camera Controls:");
-    ImGui::BulletText("WASD - Move camera");
-    ImGui::BulletText("Mouse - Look around");
-    ImGui::BulletText("ESC - Toggle camera/cursor");
-    ImGui::BulletText("Cmd+W - Close window");
   }
 
   ImGui::End();
@@ -358,12 +358,11 @@ int main() {
     ImGui::NewFrame();
 
     render_imgui_window(
-      camera,
-      spotlight_enabled, spotlight_cutoff, spotlight_outer_cutoff,
-      spotlight_ambient, spotlight_diffuse, spotlight_specular,
-      directional_dir, directional_ambient, directional_diffuse,
-      directional_specular, point_light_positions, point_light_colors,
-      point_light_constant, point_light_linear, point_light_quadratic);
+      camera, spotlight_enabled, spotlight_cutoff, spotlight_outer_cutoff,
+      spotlight_ambient, spotlight_diffuse, spotlight_specular, directional_dir,
+      directional_ambient, directional_diffuse, directional_specular,
+      point_light_positions, point_light_colors, point_light_constant,
+      point_light_linear, point_light_quadratic);
 
     ImGui::Render();
 
