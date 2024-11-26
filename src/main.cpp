@@ -14,6 +14,7 @@
 #include "shader.hpp"
 #include "texture.hpp"
 #include "mesh.hpp"
+#include "model.hpp"
 
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 800;
