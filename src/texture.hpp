@@ -5,15 +5,23 @@
 
 #include <glad/glad.h>
 
+enum class TextureType {
+  UNSPECIFIED, // dude
+  DIFFUSE,
+  SPECULAR,
+};
+
 class Texture {
 public:
   unsigned int id;
+  TextureType type;
 
-  Texture(const char *texture_path) {
+  Texture(const char *texture_path, TextureType type = TextureType::UNSPECIFIED)
+    : type(type) {
     int width, height, n_channels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load(texture_path,
-                                    &width, &height, &n_channels, 0);
+    unsigned char *data =
+      stbi_load(texture_path, &width, &height, &n_channels, 0);
     if (!data) {
       fprintf(stderr, "Failed to load texture\n");
       stbi_image_free(data);
