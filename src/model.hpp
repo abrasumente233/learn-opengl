@@ -18,6 +18,8 @@
 #include "shader.hpp"
 #include "texture.hpp"
 
+std::vector<Texture> textures_loaded;
+
 class Model {
 public:
   Model(const char *path) { load_model(path); }
@@ -56,6 +58,7 @@ private:
       process_node(node->mChildren[i], scene);
     }
   }
+
   Mesh process_mesh(aiMesh *mesh, const aiScene *scene) {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
@@ -106,6 +109,7 @@ private:
 
     return Mesh(vertices, indices, textures);
   }
+
   std::vector<Texture> load_material_textures(aiMaterial *mat,
                                               aiTextureType type,
                                               TextureType texture_type) {
@@ -113,8 +117,18 @@ private:
     for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
       aiString str;
       mat->GetTexture(type, i, &str);
-      std::string path = directory + "/" + str.C_Str();
-      textures.push_back(Texture(path.c_str(), texture_type));
+      bool skip = true;
+      for (size_t j = 0; j < textures_loaded.size(); j++) {
+        if (std::strcmp(textures_loaded[j].path.c_str(), str.C_Str()) == 0) {
+          textures.push_back(textures_loaded[j]);
+          skip = false;
+          break;
+        }
+      }
+      if (!skip) {
+        std::string path = directory + "/" + str.C_Str();
+        textures.push_back(Texture(path.c_str(), texture_type));
+      }
     }
     return textures;
   }

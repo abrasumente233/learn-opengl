@@ -3,3 +3,4 @@ build/
 !/subprojects/*.wrap
 imgui.ini
 *.afphoto
+assets/backpack

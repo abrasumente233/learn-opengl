@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -15,9 +17,10 @@ class Texture {
 public:
   unsigned int id;
   TextureType type;
+  std::string path;
 
   Texture(const char *texture_path, TextureType type = TextureType::UNSPECIFIED)
-    : type(type) {
+    : type(type), path(texture_path) {
     int width, height, n_channels;
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data =
