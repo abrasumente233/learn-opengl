@@ -114,20 +114,24 @@ private:
                                               aiTextureType type,
                                               TextureType texture_type) {
     std::vector<Texture> textures;
+    printf("mat->GetTextureCount(type) = %d\n", mat->GetTextureCount(type));
     for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
       aiString str;
       mat->GetTexture(type, i, &str);
-      bool skip = true;
+      std::string path = directory + "/" + str.C_Str();
+      bool skip = false;
       for (size_t j = 0; j < textures_loaded.size(); j++) {
-        if (std::strcmp(textures_loaded[j].path.c_str(), str.C_Str()) == 0) {
+        if (std::strcmp(textures_loaded[j].path.c_str(), path.c_str()) == 0) {
           textures.push_back(textures_loaded[j]);
-          skip = false;
+          skip = true;
           break;
         }
       }
       if (!skip) {
-        std::string path = directory + "/" + str.C_Str();
-        textures.push_back(Texture(path.c_str(), texture_type));
+        printf("no skip\n");
+        auto texture = Texture(path.c_str(), texture_type);
+        textures.push_back(texture);
+        textures_loaded.push_back(texture);
       }
     }
     return textures;

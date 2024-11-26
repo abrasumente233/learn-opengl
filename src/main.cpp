@@ -470,21 +470,21 @@ int main() {
 
     backpack_model.draw(obj_shader);
 
-    // for (int i = 0; i < 4; i++) {
-    //   glm::mat4 model = glm::mat4(1.0f);
-    //   model = glm::translate(model, point_light_positions[i]);
-    //   model = glm::scale(model, glm::vec3(0.2f));
-    //
-    //   light_shader.use();
-    //   light_shader.set_mat4("model", model);
-    //   light_shader.set_mat4("view", view);
-    //   light_shader.set_mat4("projection", projection);
-    //
-    //   light_shader.set_texture("lampTexture", lamp_tex, 0);
-    //
-    //   glBindVertexArray(light_vao);
-    //   glDrawArrays(GL_TRIANGLES, 0, num_vertices);
-    // }
+    for (int i = 0; i < 4; i++) {
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, point_light_positions[i]);
+      model = glm::scale(model, glm::vec3(0.2f));
+
+      light_shader.use();
+      light_shader.set_mat4("model", model);
+      light_shader.set_mat4("view", view);
+      light_shader.set_mat4("projection", projection);
+
+      light_shader.set_texture("lampTexture", lamp_tex, 0);
+
+      glBindVertexArray(light_vao);
+      glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+    }
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
