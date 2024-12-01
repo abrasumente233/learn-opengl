@@ -11,9 +11,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "camera.hpp"
+#include "model.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
-#include "model.hpp"
 
 const unsigned int SCR_WIDTH = 1600;
 const unsigned int SCR_HEIGHT = 800;
@@ -407,67 +407,73 @@ int main() {
 
     glm::mat4 normal_matrix = glm::transpose(glm::inverse(view));
 
-    // {
-    //   obj_shader.use();
-    //   obj_shader.set_mat4("view", view);
-    //   obj_shader.set_mat4("projection", projection);
-    //   obj_shader.set_mat4("normalMatrix", normal_matrix);
-    //   obj_shader.set_vec3("spotlight.pos", glm::vec3(0.0f));
-    //   obj_shader.set_vec3("spotlight.dir", glm::vec3(0.0f, 0.0f, -1.0f));
-    //   obj_shader.set_float("spotlight.cutoff",
-    //                        glm::cos(glm::radians(spotlight_cutoff)));
-    //   obj_shader.set_float("spotlight.outerCutoff",
-    //                        glm::cos(glm::radians(spotlight_outer_cutoff)));
-    //
-    //   if (spotlight_enabled) {
-    //     obj_shader.set_vec3("spotlight.ambient", spotlight_ambient);
-    //     obj_shader.set_vec3("spotlight.diffuse", spotlight_diffuse);
-    //     obj_shader.set_vec3("spotlight.specular", spotlight_specular);
-    //   } else {
-    //     obj_shader.set_vec3("spotlight.ambient", glm::vec3(0.0f));
-    //     obj_shader.set_vec3("spotlight.diffuse", glm::vec3(0.0f));
-    //     obj_shader.set_vec3("spotlight.specular", glm::vec3(0.0f));
-    //   }
-    //
-    //   obj_shader.set_vec3("directionalLight.dir", directional_dir);
-    //   obj_shader.set_vec3("directionalLight.ambient", directional_ambient);
-    //   obj_shader.set_vec3("directionalLight.diffuse", directional_diffuse);
-    //   obj_shader.set_vec3("directionalLight.specular", directional_specular);
-    //
-    //   for (size_t i = 0; i < 4; i++) {
-    //     std::string name = "pointLights[" + std::to_string(i) + "]";
-    //     glm::vec3 viewPos =
-    //       glm::vec3(view * glm::vec4(point_light_positions[i], 1.0f));
-    //     obj_shader.set_vec3(name + ".pos", viewPos);
-    //     obj_shader.set_float(name + ".constant", point_light_constant);
-    //     obj_shader.set_float(name + ".linear", point_light_linear);
-    //     obj_shader.set_float(name + ".quadratic", point_light_quadratic);
-    //     obj_shader.set_vec3(name + ".ambient", point_light_colors[i] * 0.05f);
-    //     obj_shader.set_vec3(name + ".diffuse", point_light_colors[i] * 0.8f);
-    //     obj_shader.set_vec3(name + ".specular", point_light_colors[i]);
-    //   }
-    //
-    //   obj_shader.set_texture("material.diffuse", container_tex, 0);
-    //   obj_shader.set_texture("material.specular", container_specular_tex, 1);
-    //   obj_shader.set_float("material.shininess", 32.0f);
-    //
-    //   const size_t ncubes = 25;
-    //   const size_t cubes_per_row = 5;
-    //   const float spacing = 1.2f;
-    //   glBindVertexArray(obj_vao);
-    //   for (size_t i = 0; i < ncubes; i++) {
-    //     const float off = (cubes_per_row - 1) * spacing / 2.0f;
-    //     const float x = (i % cubes_per_row) * spacing - off;
-    //     const float y = (i / cubes_per_row) * spacing - off;
-    //
-    //     glm::vec3 pos = glm::vec3(x, y, 0.0f);
-    //     glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
-    //     obj_shader.set_mat4("model", model);
-    //     glDrawArrays(GL_TRIANGLES, 0, num_vertices);
-    //   }
-    // }
+    {
+      obj_shader.use();
+      obj_shader.set_mat4("view", view);
+      obj_shader.set_mat4("projection", projection);
+      obj_shader.set_mat4("normalMatrix", normal_matrix);
+      obj_shader.set_vec3("spotlight.pos", glm::vec3(0.0f));
+      obj_shader.set_vec3("spotlight.dir", glm::vec3(0.0f, 0.0f, -1.0f));
+      obj_shader.set_float("spotlight.cutoff",
+                           glm::cos(glm::radians(spotlight_cutoff)));
+      obj_shader.set_float("spotlight.outerCutoff",
+                           glm::cos(glm::radians(spotlight_outer_cutoff)));
 
-    backpack_model.draw(obj_shader);
+      if (spotlight_enabled) {
+        obj_shader.set_vec3("spotlight.ambient", spotlight_ambient);
+        obj_shader.set_vec3("spotlight.diffuse", spotlight_diffuse);
+        obj_shader.set_vec3("spotlight.specular", spotlight_specular);
+      } else {
+        obj_shader.set_vec3("spotlight.ambient", glm::vec3(0.0f));
+        obj_shader.set_vec3("spotlight.diffuse", glm::vec3(0.0f));
+        obj_shader.set_vec3("spotlight.specular", glm::vec3(0.0f));
+      }
+
+      obj_shader.set_vec3("directionalLight.dir", directional_dir);
+      obj_shader.set_vec3("directionalLight.ambient", directional_ambient);
+      obj_shader.set_vec3("directionalLight.diffuse", directional_diffuse);
+      obj_shader.set_vec3("directionalLight.specular", directional_specular);
+
+      for (size_t i = 0; i < 4; i++) {
+        std::string name = "pointLights[" + std::to_string(i) + "]";
+        glm::vec3 viewPos =
+          glm::vec3(view * glm::vec4(point_light_positions[i], 1.0f));
+        obj_shader.set_vec3(name + ".pos", viewPos);
+        obj_shader.set_float(name + ".constant", point_light_constant);
+        obj_shader.set_float(name + ".linear", point_light_linear);
+        obj_shader.set_float(name + ".quadratic", point_light_quadratic);
+        obj_shader.set_vec3(name + ".ambient", point_light_colors[i] * 0.05f);
+        obj_shader.set_vec3(name + ".diffuse", point_light_colors[i] * 0.8f);
+        obj_shader.set_vec3(name + ".specular", point_light_colors[i]);
+      }
+
+      obj_shader.set_texture("material.diffuse", container_tex, 0);
+      obj_shader.set_texture("material.specular", container_specular_tex, 1);
+      obj_shader.set_float("material.shininess", 32.0f);
+
+      // array of cubes
+      // const size_t ncubes = 25;
+      // const size_t cubes_per_row = 5;
+      // const float spacing = 1.2f;
+      // glBindVertexArray(obj_vao);
+      // for (size_t i = 0; i < ncubes; i++) {
+      //   const float off = (cubes_per_row - 1) * spacing / 2.0f;
+      //   const float x = (i % cubes_per_row) * spacing - off;
+      //   const float y = (i / cubes_per_row) * spacing - off;
+      //
+      //   glm::vec3 pos = glm::vec3(x, y, 0.0f);
+      //   glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
+      //   obj_shader.set_mat4("model", model);
+      //   glDrawArrays(GL_TRIANGLES, 0, num_vertices);
+      // }
+
+      // backpack
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, glm::vec3(0.0f));
+      model = glm::scale(model, glm::vec3(0.2f));
+      obj_shader.set_mat4("model", model);
+      backpack_model.draw(obj_shader);
+    }
 
     for (int i = 0; i < 4; i++) {
       glm::mat4 model = glm::mat4(1.0f);

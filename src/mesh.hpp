@@ -33,6 +33,7 @@ public:
   }
 
   void draw(Shader &shader) {
+    shader.use();
     unsigned int diffuse_nr = 1;
     unsigned int specular_nr = 1;
     for (unsigned int i = 0; i < textures.size(); i++) {

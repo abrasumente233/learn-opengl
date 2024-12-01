@@ -25,6 +25,7 @@ public:
   Model(const char *path) { load_model(path); }
 
   void draw(Shader &shader) {
+    shader.use();
     for (auto &mesh : meshes) {
       mesh.draw(shader);
     }
