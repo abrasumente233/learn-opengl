@@ -114,7 +114,6 @@ private:
                                               aiTextureType type,
                                               TextureType texture_type) {
     std::vector<Texture> textures;
-    printf("mat->GetTextureCount(type) = %d\n", mat->GetTextureCount(type));
     for (size_t i = 0; i < mat->GetTextureCount(type); i++) {
       aiString str;
       mat->GetTexture(type, i, &str);
@@ -128,7 +127,6 @@ private:
         }
       }
       if (!skip) {
-        printf("no skip\n");
         auto texture = Texture(path.c_str(), texture_type);
         textures.push_back(texture);
         textures_loaded.push_back(texture);

@@ -35,7 +35,6 @@ public:
   void draw(Shader &shader) {
     unsigned int diffuse_nr = 1;
     unsigned int specular_nr = 1;
-    // printf("textures.size() = %lu\n", textures.size());
     for (unsigned int i = 0; i < textures.size(); i++) {
       glActiveTexture(GL_TEXTURE0 + i);
       std::string number;
@@ -48,8 +47,6 @@ public:
       std::string name =
         ty == TextureType::DIFFUSE ? "texture_diffuse" : "texture_specular";
       shader.set_int(("material." + name + number).c_str(), i);
-      // printf("material.%s%s = %d, id=%d\n", name.c_str(), number.c_str(), i,
-      //        textures[i].id);
       glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);
