@@ -348,6 +348,7 @@ int main() {
   float spotlight_outer_cutoff = 20.5f;
 
   Model backpack_model("./assets/backpack/backpack.obj");
+  Model sponza_model("./assets/sponza/sponza.obj");
 
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
@@ -469,10 +470,17 @@ int main() {
 
       // backpack
       glm::mat4 model = glm::mat4(1.0f);
+      // model = glm::translate(model, glm::vec3(0.0f));
+      // model = glm::scale(model, glm::vec3(0.2f));
+      // obj_shader.set_mat4("model", model);
+      // backpack_model.draw(obj_shader);
+
+      // sponza
+      model = glm::mat4(1.0f);
       model = glm::translate(model, glm::vec3(0.0f));
-      model = glm::scale(model, glm::vec3(0.2f));
+      model = glm::scale(model, glm::vec3(0.01f));
       obj_shader.set_mat4("model", model);
-      backpack_model.draw(obj_shader);
+      sponza_model.draw(obj_shader);
     }
 
 #if 0
