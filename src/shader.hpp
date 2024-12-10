@@ -36,6 +36,10 @@ public:
 
   void use() const { glUseProgram(id); }
 
+  bool has_uniform(const char *name) const {
+    return glGetUniformLocation(id, name) != -1;
+  }
+
   int get_uniform_location(const char *name) const {
     int location = glGetUniformLocation(id, name);
     assert(location != -1 && "ERROR::SHADER::UNIFORM_NOT_FOUND");

@@ -470,10 +470,11 @@ int main() {
 
       // backpack
       glm::mat4 model = glm::mat4(1.0f);
-      // model = glm::translate(model, glm::vec3(0.0f));
-      // model = glm::scale(model, glm::vec3(0.2f));
-      // obj_shader.set_mat4("model", model);
-      // backpack_model.draw(obj_shader);
+      model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
+      model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+      model = glm::scale(model, glm::vec3(0.2f));
+      obj_shader.set_mat4("model", model);
+      backpack_model.draw(obj_shader);
 
       // sponza
       model = glm::mat4(1.0f);

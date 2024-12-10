@@ -19,6 +19,8 @@ public:
   TextureType type;
   std::string path;
 
+  Texture(unsigned id, TextureType type): id(id), type(type), path("") {}
+
   Texture(const char *texture_path, TextureType type = TextureType::UNSPECIFIED)
     : type(type), path(texture_path) {
     int width, height, n_channels;

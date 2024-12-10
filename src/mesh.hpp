@@ -51,6 +51,7 @@ public:
       glBindTexture(GL_TEXTURE_2D, textures[i].id);
       shader.set_int(("material." + name + number).c_str(), i);
     }
+
     // glActiveTexture(GL_TEXTURE0);
 
     // draw mesh
