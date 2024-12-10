@@ -1,8 +1,8 @@
 #version 330 core
 
 struct Material {
-    sampler2D diffuse;
-    sampler2D specular;
+    sampler2D texture_diffuse1;
+    sampler2D texture_specular1;
     float shininess;
 };
 
@@ -51,18 +51,18 @@ uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[N_POINT_LIGHTS];
 
 vec3 calculateAmbient(vec3 light_ambient) {
-    return vec3(texture(material.diffuse, texCoord)) * light_ambient;
+    return vec3(texture(material.texture_diffuse1, texCoord)) * light_ambient;
 }
 
 vec3 calculateDiffuse(vec3 light_diffuse, vec3 normalizedNormal, vec3 fragDir) {
     float diffuseFactor = max(dot(normalizedNormal, fragDir), 0.0);
-    return (diffuseFactor * vec3(texture(material.diffuse, texCoord))) * light_diffuse;
+    return (diffuseFactor * vec3(texture(material.texture_diffuse1, texCoord))) * light_diffuse;
 }
 
 vec3 calculateSpecular(vec3 light_specular, vec3 normalizedNormal, vec3 fragDir, vec3 viewDir) {
     vec3 reflectDir = reflect(-fragDir, normalizedNormal);
     float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    return (specularFactor * vec3(texture(material.specular, texCoord))) * light_specular;
+    return (specularFactor * vec3(texture(material.texture_specular1, texCoord))) * light_specular;
 }
 
 vec3 calculateSpotlight(Spotlight spotlight, vec3 fragPos, vec3 viewDir, vec3 normalView) {

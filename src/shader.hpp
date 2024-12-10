@@ -38,7 +38,7 @@ public:
 
   int get_uniform_location(const char *name) const {
     int location = glGetUniformLocation(id, name);
-    // assert(location != -1 && "ERROR::SHADER::UNIFORM_NOT_FOUND");
+    assert(location != -1 && "ERROR::SHADER::UNIFORM_NOT_FOUND");
     return location;
   }
 

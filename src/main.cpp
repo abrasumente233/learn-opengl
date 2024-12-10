@@ -447,8 +447,8 @@ int main() {
         obj_shader.set_vec3(name + ".specular", point_light_colors[i]);
       }
 
-      obj_shader.set_texture("material.diffuse", container_tex, 0);
-      obj_shader.set_texture("material.specular", container_specular_tex, 1);
+      // obj_shader.set_texture("material.diffuse", container_tex, 0);
+      // obj_shader.set_texture("material.specular", container_specular_tex, 1);
       obj_shader.set_float("material.shininess", 32.0f);
 
       // array of cubes
@@ -475,6 +475,7 @@ int main() {
       backpack_model.draw(obj_shader);
     }
 
+#if 0
     for (int i = 0; i < 4; i++) {
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, point_light_positions[i]);
@@ -490,6 +491,7 @@ int main() {
       glBindVertexArray(light_vao);
       glDrawArrays(GL_TRIANGLES, 0, num_vertices);
     }
+#endif
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
