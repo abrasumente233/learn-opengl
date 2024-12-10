@@ -25,7 +25,6 @@ public:
   Model(const char *path) { load_model(path); }
 
   void draw(Shader &shader) {
-    shader.use();
     for (auto &mesh : meshes) {
       mesh.draw(shader);
     }
@@ -49,6 +48,7 @@ private:
 
     process_node(scene->mRootNode, scene);
   }
+
   void process_node(aiNode *node, const aiScene *scene) {
     for (size_t i = 0; i < node->mNumMeshes; i++) {
       aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
