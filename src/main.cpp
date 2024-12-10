@@ -22,7 +22,7 @@ const float ASPECT_RATIO = (float)SCR_WIDTH / SCR_HEIGHT;
 float last_frame_time = 0.0f;  // Time of last frame
 float frame_delta_time = 0.0f; // Time between current frame and last frame
 
-Camera camera(glm::vec3(0.0f, 0.0f, 8.0f));
+Camera camera(glm::vec3(-0.48f, -0.49f, 0.57f), -49.65f, 37.75f);
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_pos_callback(GLFWwindow *, double xpos, double ypos);
@@ -335,7 +335,7 @@ int main() {
 
   std::array<glm::vec3, 4> point_light_positions = {
     glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
-    glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
+    glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(1.1f, 0.3f, 0.3f)};
 
   std::array<glm::vec3, 4> point_light_colors = {
     glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f)};
@@ -343,7 +343,7 @@ int main() {
   float point_light_linear = 0.09f;
   float point_light_quadratic = 0.032f;
 
-  bool spotlight_enabled = true;
+  bool spotlight_enabled = false;
   float spotlight_cutoff = 12.5f;
   float spotlight_outer_cutoff = 20.5f;
 

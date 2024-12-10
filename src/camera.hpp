@@ -15,6 +15,8 @@ public:
   float fov = 45.0f;
 
   Camera(glm::vec3 position) : position(position) {}
+  Camera(glm::vec3 position, float yaw, float pitch)
+    : position(position), yaw(yaw), pitch(pitch) {}
   Camera(glm::vec3 position, float yaw, float pitch, float fov)
     : position(position), yaw(yaw), pitch(pitch), fov(fov) {}
 
