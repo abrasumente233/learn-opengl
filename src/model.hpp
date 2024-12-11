@@ -105,12 +105,12 @@ private:
       std::vector<Texture> specular_maps = load_material_textures(
         material, aiTextureType_SPECULAR, TextureType::SPECULAR);
       if (specular_maps.empty()) {
-        unsigned char gray[] = {128, 128, 128, 255}; // Medium gray
+        unsigned char black[] = {0, 0, 0, 255};
         unsigned int default_specular_map;
         glGenTextures(1, &default_specular_map);
         glBindTexture(GL_TEXTURE_2D, default_specular_map);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, gray);
+                     GL_UNSIGNED_BYTE, black);
         specular_maps.push_back(
           Texture(default_specular_map, TextureType::SPECULAR));
       }
