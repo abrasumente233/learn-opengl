@@ -44,7 +44,7 @@ out vec4 FragColor;
 
 #define N_POINT_LIGHTS 2
 
-uniform mat4 normalMatrix;
+uniform mat3 normalMatrix;
 uniform Material material;
 uniform Spotlight spotlight;
 uniform DirectionalLight directionalLight;
@@ -74,6 +74,7 @@ vec3 calculateSpotlight(Spotlight spotlight, vec3 fragPos, vec3 viewDir, vec3 no
 
     vec3 ambient = calculateAmbient(spotlight.ambient);
     vec3 diffuse = calculateDiffuse(spotlight.diffuse, normalView, fragDir);
+    // vec3 diffuse = (max(0.0f,dot(normalView, vec3(0.0,0.0,1.0)))) * vec3(texture(material.texture_diffuse1, texCoord)) * spotlight.diffuse;
     vec3 specular = calculateSpecular(spotlight.specular, normalView, fragDir, viewDir);
 
     return ambient + (diffuse + specular) * intensity;
@@ -81,7 +82,7 @@ vec3 calculateSpotlight(Spotlight spotlight, vec3 fragPos, vec3 viewDir, vec3 no
 
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 viewDir, vec3 normalView) {
     vec3 lightDirWorld = normalize(-light.dir); // todo: remove this normalize
-    vec3 lightDirView = normalize(vec3(normalMatrix * vec4(lightDirWorld, 0.0)));
+    vec3 lightDirView = normalize(normalMatrix * lightDirWorld);
 
     vec3 ambient = calculateAmbient(light.ambient);
     vec3 diffuse = calculateDiffuse(light.diffuse, normalView, lightDirView);
@@ -104,7 +105,7 @@ vec3 calculatePointLight(PointLight light, vec3 fragPos, vec3 viewDir, vec3 norm
 
 void main() {
     // Transform normal to view space
-    vec3 normalView = normalize(vec3(normalMatrix * vec4(normal, 0.0)));
+    vec3 normalView = normalize(normalMatrix * normal);
 
     // Calculate lighting vectors
     vec3 viewDir = normalize(-fragPos);
