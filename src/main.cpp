@@ -484,8 +484,8 @@ int main() {
       sponza_model.draw(obj_shader);
     }
 
-#if 0
-    for (int i = 0; i < 4; i++) {
+#if 1
+    for (size_t i = 0; i < point_light_positions.size(); i++) {
       glm::mat4 model = glm::mat4(1.0f);
       model = glm::translate(model, point_light_positions[i]);
       model = glm::scale(model, glm::vec3(0.2f));
