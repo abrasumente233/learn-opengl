@@ -42,7 +42,7 @@ in vec3 fragPos;
 in vec2 texCoord;
 out vec4 FragColor;
 
-#define N_POINT_LIGHTS 4
+#define N_POINT_LIGHTS 2
 
 uniform mat4 normalMatrix;
 uniform Material material;

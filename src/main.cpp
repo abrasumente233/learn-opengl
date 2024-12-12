@@ -53,8 +53,8 @@ void render_imgui_window(
   glm::vec3 &spotlight_diffuse, glm::vec3 &spotlight_specular,
   glm::vec3 &directional_dir, glm::vec3 &directional_ambient,
   glm::vec3 &directional_diffuse, glm::vec3 &directional_specular,
-  std::array<glm::vec3, 4> &point_light_positions,
-  std::array<glm::vec3, 4> &point_light_colors, float &point_light_constant,
+  std::vector<glm::vec3> &point_light_positions,
+  std::vector<glm::vec3> &point_light_colors, float &point_light_constant,
   float &point_light_linear, float &point_light_quadratic) {
 
   ImGui::Begin("Scene Controls");
@@ -103,7 +103,7 @@ void render_imgui_window(
     ImGui::SliderFloat("Quadratic", &point_light_quadratic, 0.0f, 1.0f);
 
     // Individual point light controls
-    for (int i = 0; i < 4; i++) {
+    for (size_t i = 0; i < point_light_positions.size(); i++) {
       if (ImGui::TreeNode(("Point Light " + std::to_string(i + 1)).c_str())) {
         ImGui::DragFloat3("Position", glm::value_ptr(point_light_positions[i]),
                           0.1f);
@@ -333,11 +333,14 @@ int main() {
   glm::vec3 directional_diffuse(0.4f);
   glm::vec3 directional_specular(0.5f);
 
-  std::array<glm::vec3, 4> point_light_positions = {
-    glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
-    glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(1.1f, 0.3f, 0.3f)};
+  // std::vector<glm::vec3> point_light_positions = {
+  //   glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
+  //   glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(1.1f, 0.3f, 0.3f)};
 
-  std::array<glm::vec3, 4> point_light_colors = {
+  std::vector<glm::vec3> point_light_positions = {
+    glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),};
+
+  std::vector<glm::vec3> point_light_colors = {
     glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f)};
   float point_light_constant = 1.0f;
   float point_light_linear = 0.09f;
@@ -435,7 +438,7 @@ int main() {
       obj_shader.set_vec3("directionalLight.diffuse", directional_diffuse);
       obj_shader.set_vec3("directionalLight.specular", directional_specular);
 
-      for (size_t i = 0; i < 4; i++) {
+      for (size_t i = 0; i < point_light_positions.size(); i++) {
         std::string name = "pointLights[" + std::to_string(i) + "]";
         glm::vec3 viewPos =
           glm::vec3(view * glm::vec4(point_light_positions[i], 1.0f));
