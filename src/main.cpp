@@ -409,13 +409,10 @@ int main() {
     //   glm::vec3(light_model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
     // glm::vec3 light_view = glm::vec3(view * glm::vec4(light_world, 1.0f));
 
-    glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(view)));
-
     {
       obj_shader.use();
       obj_shader.set_mat4("view", view);
       obj_shader.set_mat4("projection", projection);
-      obj_shader.set_mat3("normalMatrix", normal_matrix);
       obj_shader.set_vec3("spotlight.pos", glm::vec3(0.0f));
       obj_shader.set_vec3("spotlight.dir", glm::vec3(0.0f, 0.0f, -1.0f));
       obj_shader.set_float("spotlight.cutoff",
@@ -473,11 +470,16 @@ int main() {
 
       // backpack
       glm::mat4 model = glm::mat4(1.0f);
+
       model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
       model =
         glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
       model = glm::scale(model, glm::vec3(0.2f));
       obj_shader.set_mat4("model", model);
+
+      glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(view * model)));
+      obj_shader.set_mat3("normalMatrix", normal_matrix);
+
       backpack_model.draw(obj_shader);
 
       // sponza
@@ -485,6 +487,10 @@ int main() {
       model = glm::translate(model, glm::vec3(0.0f));
       model = glm::scale(model, glm::vec3(0.01f));
       obj_shader.set_mat4("model", model);
+
+      normal_matrix = glm::transpose(glm::inverse(glm::mat3(view * model)));
+      obj_shader.set_mat3("normalMatrix", normal_matrix);
+
       sponza_model.draw(obj_shader);
     }
 
