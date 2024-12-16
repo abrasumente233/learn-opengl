@@ -313,6 +313,10 @@ int main() {
   // enable depth test
   glEnable(GL_DEPTH_TEST);
 
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+  glFrontFace(GL_CCW); // or GL_CW depending on your model's winding order
+
   // mouse input
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetCursorPosCallback(window, mouse_pos_callback);
