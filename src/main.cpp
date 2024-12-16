@@ -173,6 +173,7 @@ int main() {
   printf("Maximum nr of vertex attributes supported: %d\n", nr_attributes);
 
   Shader obj_shader = Shader("src/basic.vert", "src/basic.frag");
+  // Shader obj_shader = Shader("src/basic.vert", "src/normal.frag");
   Shader light_shader = Shader("src/basic.vert", "src/light.frag");
 
   // prepare vertex data
@@ -342,7 +343,9 @@ int main() {
   //   glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(1.1f, 0.3f, 0.3f)};
 
   std::vector<glm::vec3> point_light_positions = {
-    glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),};
+    glm::vec3(0.7f, 0.2f, 2.0f),
+    glm::vec3(2.3f, -3.3f, -4.0f),
+  };
 
   std::vector<glm::vec3> point_light_colors = {
     glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f), glm::vec3(1.0f)};
@@ -356,6 +359,7 @@ int main() {
 
   Model backpack_model("./assets/backpack/backpack.obj");
   Model sponza_model("./assets/sponza/sponza.obj");
+  // Model sponza_model("./assets/sponza/modified.obj");
 
   while (!glfwWindowShouldClose(window)) {
     if (glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
@@ -473,29 +477,35 @@ int main() {
       // }
 
       // backpack
-      glm::mat4 model = glm::mat4(1.0f);
+      if (1) {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
+        model =
+          glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.2f));
+        obj_shader.set_mat4("model", model);
 
-      model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
-      model =
-        glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      model = glm::scale(model, glm::vec3(0.2f));
-      obj_shader.set_mat4("model", model);
+        glm::mat3 normal_matrix =
+          glm::transpose(glm::inverse(glm::mat3(view * model)));
+        obj_shader.set_mat3("normalMatrix", normal_matrix);
 
-      glm::mat3 normal_matrix = glm::transpose(glm::inverse(glm::mat3(view * model)));
-      obj_shader.set_mat3("normalMatrix", normal_matrix);
-
-      backpack_model.draw(obj_shader);
+        backpack_model.draw(obj_shader);
+      }
 
       // sponza
-      model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(0.0f));
-      model = glm::scale(model, glm::vec3(0.01f));
-      obj_shader.set_mat4("model", model);
+      {
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f));
+        model = glm::scale(model, glm::vec3(0.01f));
+        obj_shader.set_mat4("model", model);
 
-      normal_matrix = glm::transpose(glm::inverse(glm::mat3(view * model)));
-      obj_shader.set_mat3("normalMatrix", normal_matrix);
+        glm::mat3 normal_matrix =
+          glm::transpose(glm::inverse(glm::mat3(view * model)));
+        obj_shader.set_mat3("normalMatrix", normal_matrix);
 
-      sponza_model.draw(obj_shader);
+        sponza_model.draw(obj_shader);
+      }
     }
 
 #if 1
